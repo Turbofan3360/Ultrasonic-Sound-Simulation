@@ -50,7 +50,7 @@ def generate_data_matrix_row(x):
 if __name__ == "__main__":
 	x_values = list(range(plotsize+1))
 	with Pool(processes=cpu_cores) as pool:
-		data_matrix = pool.map(generate_data_matrix_row, x_values, chunksize=plotsize/cpu_cores)
+		data_matrix = pool.map(generate_data_matrix_row, x_values)
 
 	data_matrix = np.array(data_matrix)
 
