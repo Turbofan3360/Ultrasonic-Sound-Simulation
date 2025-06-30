@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-from math import sqrt, sin, pi
+from math import sqrt, sin, pi, log
+from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
-from multiprocessing import Pool
 
 plotsize = 200 # Distance around the ultrasonic array that you're modelling (in centimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 # Locations of the transducers - formatted as [[x, y], [x, y]] in centimeters from origin
 #transducers = [[0, 8.6], [2.23, 8.31], [4.3, 7.45], [6.08, 6.08], [7.45, 4.3], [8.31, 2.23], [8.6, 0]]
 transducers = [[50, 0], [100, 0], [150, 0]]
-wavelength = (343/25000)/100 # in CM not M
+wavelength = 343/250 # in CM not M (250 as dividing by 25KHz, then multiplying by 100)
 
 def log(string):
 	print(string)
@@ -20,10 +20,6 @@ def distance_wavelengths(x, y, transducer_no):
 	dist_sq = (x - transducers[transducer_no][0])**2 + (y - transducers[transducer_no][1])**2
 	dist = sqrt(dist_sq)
 	dist /= wavelength
-
-	# Getting only the wavelength delta
-	while dist > 1:
-		dist -= 1
 
 	return dist
 
@@ -37,12 +33,19 @@ def sum_waves(x, y):
 
 	return wave
 
+def log_scale(amplitude):
+	volume_db = 20*log(amplitude, 10)
+
+	return volume_db
+
 def generate_data_matrix_row(x):
 	data_row = (plotsize+1)*[0]
 	log("Processing row {}...".format(x))
 	for y in range(plotsize+1):
 		wave = sum_waves(x, y)
-		data_row[y] = wave
+		wave_scaled = log_scale(wave)
+
+		data_row[y] = wave_scaled
 
 	return data_row
 
