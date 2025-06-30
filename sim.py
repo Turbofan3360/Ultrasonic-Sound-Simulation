@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from multiprocessing import Pool
 
-plotsize = 100 # Distance around the ultrasonic array that you're modelling (in centimeters)
+plotsize = 200 # Distance around the ultrasonic array that you're modelling (in centimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 # Locations of the transducers - formatted as [[x, y], [x, y]] in centimeters from origin
 #transducers = [[0, 8.6], [2.23, 8.31], [4.3, 7.45], [6.08, 6.08], [7.45, 4.3], [8.31, 2.23], [8.6, 0]]
