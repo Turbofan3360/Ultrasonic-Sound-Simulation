@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from math import sqrt, sin, pi, log
+from math import sqrt, sin, pi, log10
 from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,7 +34,7 @@ def sum_waves(x, y):
 	return wave
 
 def log_scale(amplitude):
-	volume_db = 20*log(amplitude, 10)
+	volume_db = 20*log10(abs(amplitude))
 
 	return volume_db
 
