@@ -8,8 +8,7 @@ import numpy as np
 plotsize = 500 # Distance around the ultrasonic array that you're modelling (in centimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 # Locations of the transducers - formatted as [[x, y], [x, y]] in centimeters from origin
-#transducers = [[0, 8.6], [2.23, 8.31], [4.3, 7.45], [6.08, 6.08], [7.45, 4.3], [8.31, 2.23], [8.6, 0]]
-transducers = [[100, 0], [200, 0], [300, 0]]
+transducers = [[150, 250], [250, 250], [350, 250]]
 wavelength = 343/250 # in CM not M (250 as dividing by 25KHz, then multiplying by 100)
 
 def log(string):
