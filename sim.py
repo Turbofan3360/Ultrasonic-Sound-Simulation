@@ -9,7 +9,12 @@ import numpy as np
 plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in milimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 # Locations of the transducers - formatted as [[x, y, phase offset], [x, y, phase offset]] in milimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
-transducers = [[0, 86, 0], [22.3, 83.1, pi/6], [43, 74.5, pi/3], [60.8, 60.8, pi/2], [74.5, 43, (2/3)*pi], [83.1, 22.3, (5/6)*pi], [86, 0, 0]]
+transducers = [
+	[500, 586, 0], [522.3, 583.1, pi/3], [543, 574.5, (2/3)*pi], [560.8, 560.8, pi], [574.5, 543, (4/3)*pi], [583.1, 522.3, (5/3)*pi],
+	[586, 500, 0], [583.1, 477.7, pi/3], [574.5, 457, (2/3)*pi], [560.8, 439.2, pi], [543, 425.5, (4/3)*pi], [522.3, 416.9, (5/3)*pi],
+	[500, 414, 0], [477.7, 416.9, pi/3], [457, 425.5, (2/3)*pi], [439.2, 439.2, pi], [425.5, 457, (4/3)*pi], [416.9, 477.7, (5/3)*pi],
+	[414, 500, 0], [416.9, 522.3, pi/3], [425.5, 543, (2/3)*pi], [439.2, 560.8, pi], [457, 574.5, (4/3)*pi], [477.7, 583.1, (5/3)*pi]
+	]
 frequency = 25000 # in Hz
 
 _wavelength = (343/frequency)*1000 # in MM not M
