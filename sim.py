@@ -58,22 +58,22 @@ def attenuate(wave_amplitude, dist):
 
 	return wave_amplitude
 
-def generate_data_matrix_row(x):
+def generate_data_matrix_row(y):
 	data_row = (plotsize+1)*[0]
-	log("Processing row {}...".format(x))
+	log("Processing row {}...".format(y))
 	
-	for y in range(plotsize+1):
+	for x in range(plotsize+1):
 		wave = sum_waves(x, y)
 
-		data_row[y] = wave
+		data_row[x] = wave
 
 	return data_row
 
 
 if __name__ == "__main__":
-	x_values = list(range(plotsize+1))
+	y_values = list(range(plotsize+1))
 	with Pool(processes=cpu_cores) as pool:
-		data_matrix = pool.map(generate_data_matrix_row, x_values)
+		data_matrix = pool.map(generate_data_matrix_row, y_values)
 
 	data_matrix = np.array(data_matrix)
 
