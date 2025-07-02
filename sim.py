@@ -6,7 +6,7 @@ from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
 
-plotsize = 100 # Distance around the ultrasonic array that you're modelling (in centimeters)
+plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in centimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 # Locations of the transducers - formatted as [[x, y], [x, y]] in centimeters from origin
 transducers = [[0, 8.6], [2.23, 8.31], [4.3, 7.45], [6.08, 6.08], [7.45, 4.3], [8.31, 2.23], [8.6, 0]]
@@ -86,13 +86,7 @@ if __name__ == "__main__":
 
 	data_matrix = np.array(data_matrix)
 
-	# Configuring the heatmap plot to be how I like it
-	if plotsize >= 250:
-		interpolation_value = "bilinear"
-	else:
-		interpolation_value = "nearest"
-
-	plt.imshow(data_matrix, cmap="plasma", interpolation=interpolation_value, origin="lower")
+	plt.imshow(data_matrix, cmap="plasma", interpolation="bilinear", origin="lower")
 	plt.colorbar()
 	plt.title("Ultrasound Intensity Around Transducer Array")
 	plt.xlabel("Distance/CM")
