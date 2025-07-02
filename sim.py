@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from math import sqrt, pi, log10
-from cmath import exp, complex
+from cmath import exp
 from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
@@ -50,8 +50,11 @@ def sum_waves(x, y):
 	return wave_scaled
 
 def log_scale(amplitude):
-	volume_db = 20*log10(amplitude)
-
+	if amplitude:
+		volume_db = 20*log10(amplitude)
+	else:
+		# volume_db would actually go to −∞, but can't represent that. -200 is low enough
+		return -200
 	return volume_db
 
 def attenuate(dist):
