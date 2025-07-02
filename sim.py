@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from math import sqrt, sin, pi, log10, exp
+from math import sqrt, pi, log10
+from cmath import exp, complex
 from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,37 +27,42 @@ def distance_wavelengths(x, y, transducer_no):
 	return dist_lambdas, dist
 
 def sum_waves(x, y):
-	wave = 0
+	wave = 0 + 0j
 
 	for transducer in range(len(transducers)):
-		# Calculating amplitude of a wave from a particular transducer at the point [x, y]
-		wave_from_transducer, dist = distance_wavelengths(x, y, transducer)
-		wave_sin = sin(wave_from_transducer*2*pi)
+		# Calculating phase offset of a wave from a particular transducer at the point [x, y]
+		phase_offset, dist = distance_wavelengths(x, y, transducer)
+		phase_offset *= 2*pi
 
 		# Calculating wave attenuation
-		wave_attenuated = attenuate(wave_sin, dist)
+		amplitude = attenuate(dist)
 
-		wave += wave_attenuated
+		# Calculating phasor
+		complex_phase = complex(0, phase_offset)
+		wave_calc = amplitude*exp(complex_phase)
 
-	# Log-scaling the wave (converting it to dB)
-	wave_scaled = log_scale(wave)
+		# Summing phasors
+		wave += wave_calc
+
+	# Log-scaling (converting to dB) the modulus of the phasor sum wave
+	wave_scaled = log_scale(abs(wave))
 
 	return wave_scaled
 
 def log_scale(amplitude):
-	volume_db = 20*log10(abs(amplitude))
+	volume_db = 20*log10(amplitude)
 
 	return volume_db
 
-def attenuate(wave_amplitude, dist):
+def attenuate(dist):
 	# dist in CM, needs converting to M
 	dist /= 100
 
-	wave_amplitude *= exp(-_attenuation_constant*dist) # Attenuation in air
+	amplitude = exp(-_attenuation_constant*dist) # Attenuation in air
 	if dist: # Guarding against 0 divison error
-		wave_amplitude /= dist # Attenuation due to distance (geometric)
+		amplitude /= dist # Attenuation due to distance (geometric)
 
-	return wave_amplitude
+	return amplitude
 
 def generate_data_matrix_row(y):
 	data_row = (plotsize+1)*[0]
