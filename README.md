@@ -18,7 +18,6 @@ transducer (considered a point source currently), and then log-scales that to a 
 distance and in air). This is a parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
 
 In future, I will be adding:
- - Ring arrays with a phase difference between each transducer
  - Transducers that are no longer point sources
  - Hopefully much more!
 
@@ -30,6 +29,7 @@ plotsize (line 8): This defines the side length of the square plot produced by t
 
 cpu_cores (line 9): This defines the number of CPU cores that the program will use when simulating
 
-transducers (line 11): This defines the location of the transducers as a list of [x, y] co-ordinate lists (co-ordinates in milimeters from the origin)
+transducers (line 11): This defines the location of the transducers as a list of [x, y, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). You can also set
+a phase offset (in radians) for the transducer in the 3rd element of the list.
 
 frequency (line 12): This defines the frequency of ultrasound you want to simulate. Currently, this is set to 25 KHz.
