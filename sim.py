@@ -6,13 +6,13 @@ from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
 
-plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in centimeters)
+plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in milimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
-# Locations of the transducers - formatted as [[x, y], [x, y]] in centimeters from origin
-transducers = [[0, 8.6], [2.23, 8.31], [4.3, 7.45], [6.08, 6.08], [7.45, 4.3], [8.31, 2.23], [8.6, 0]]
-frequency = 250000 # in Hz
+# Locations of the transducers - formatted as [[x, y], [x, y]] in milimeters from origin
+transducers = [[0, 86], [22.3, 83.1], [43, 74.5], [60.8, 60.8], [74.5, 43], [83.1, 22.3], [86, 0]]
+frequency = 25000 # in Hz
 
-_wavelength = (343/frequency)*100 # in CM not M
+_wavelength = (343/frequency)*1000 # in MM not M
 _attenuation_constant = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3)) # Calculation using Stokes-Kirchoff Model, in Nepers/m
 
 def log(string):
@@ -58,8 +58,8 @@ def log_scale(amplitude):
 	return volume_db
 
 def attenuate(dist):
-	# dist in CM, needs converting to M
-	dist /= 100
+	# dist in MM, needs converting to M
+	dist /= 1000
 
 	amplitude = exp(-_attenuation_constant*dist) # Attenuation in air
 	if dist: # Guarding against 0 divison error
@@ -88,8 +88,8 @@ if __name__ == "__main__":
 
 	plt.imshow(data_matrix, cmap="plasma", interpolation="bilinear", origin="lower")
 	plt.colorbar()
-	plt.title("Ultrasound Intensity Around Transducer Array")
-	plt.xlabel("Distance/CM")
-	plt.ylabel("Distance/CM")
+	plt.title("Ultrasound Intensity (dB) Around Transducer Array")
+	plt.xlabel("Distance/MM")
+	plt.ylabel("Distance/MM")
 
 	plt.show()

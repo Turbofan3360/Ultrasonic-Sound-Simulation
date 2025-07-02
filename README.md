@@ -13,9 +13,9 @@ _More details about their project and simulation (page 5 of the paper) in their 
 
 ### The Code: ###
 
-This simulation sums up the waves at every point in the user-defined grid size, using the path difference of the waves from each ultrasonic transducer (considered a point source
-currently), and then log-scales that to a decibel result for that square. The program also takes into account signal attenuation (both over distance and in air). This is a
-parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
+This simulation sums up the waves at every point in the user-defined grid size (using phasors, i.e. Euler's formula), using the path difference of the waves from each ultrasonic
+transducer (considered a point source currently), and then log-scales that to a decibel result for that square. The program also takes into account signal attenuation (both over
+distance and in air). This is a parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
 
 In future, I will be adding:
  - Ring arrays with a phase difference between each transducer
@@ -26,10 +26,10 @@ In future, I will be adding:
 
 For you to run the program, you will need to define a few variables:
 
-plotsize (line 8): This defines the side length of the square plot produced by the simulation
+plotsize (line 8): This defines the side length of the square plot produced by the simulation in milimeters
 
 cpu_cores (line 9): This defines the number of CPU cores that the program will use when simulating
 
-transducers (line 11): This defines the location of the transducers as a list of [x, y] co-ordinate lists.
+transducers (line 11): This defines the location of the transducers as a list of [x, y] co-ordinate lists (co-ordinates in milimeters from the origin)
 
 frequency (line 12): This defines the frequency of ultrasound you want to simulate. Currently, this is set to 25 KHz.
