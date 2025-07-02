@@ -8,8 +8,8 @@ import numpy as np
 
 plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in milimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
-# Locations of the transducers - formatted as [[x, y], [x, y]] in milimeters from origin
-transducers = [[0, 86], [22.3, 83.1], [43, 74.5], [60.8, 60.8], [74.5, 43], [83.1, 22.3], [86, 0]]
+# Locations of the transducers - formatted as [[x, y, phase offset], [x, y, phase offset]] in milimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
+transducers = [[0, 86, 0], [22.3, 83.1, pi/6], [43, 74.5, pi/3], [60.8, 60.8, pi/2], [74.5, 43, (2/3)*pi], [83.1, 22.3, (5/6)*pi], [86, 0, 0]]
 frequency = 25000 # in Hz
 
 _wavelength = (343/frequency)*1000 # in MM not M
@@ -33,6 +33,7 @@ def sum_waves(x, y):
 		# Calculating phase offset of a wave from a particular transducer at the point [x, y]
 		phase_offset, dist = distance_wavelengths(x, y, transducer)
 		phase_offset *= 2*pi
+		phase_offset += transducers[transducer][2]
 
 		# Calculating wave attenuation
 		amplitude = attenuate(dist)
