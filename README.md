@@ -2,7 +2,7 @@
 
 ### Source and Idea: ### 
 
-This is based on a project from the University of Chicago's SAND Lab (Project page: <https://sandlab.cs.uchicago.edu/jammer>/). The aim of the project was to create a wearable jammer
+This is based on a project from the University of Chicago's SAND Lab (Project page: <https://sandlab.cs.uchicago.edu/jammer/>). The aim of the project was to create a wearable jammer
 that uses ultrasonic sound to jam many common microphones (e.g. used in Alexa/Google Home voice assistants, mobile phones, e.t.c.).
 
 I decided to try and use their idea to create a stationary ultrasonic jammer. The key issue with a stationary jammer is the potential blind spots, which aren't 'blurred out' by movement
@@ -13,22 +13,23 @@ _More details about their project and simulation (page 5 of the paper) in their 
 
 ### The Code: ###
 
-Currently, this is a very basic simulation. Fundamentally, it just sums up the waves at every point in the user-defined grid size, using the path difference of the waves from each
-ultrasonic transducer (considered a point source currently), and then log-scales that to a decibel result for that square. This is a parallelised program, so you will also need to
-define the number of CPU cores that the program can utilize.
+This simulation sums up the waves at every point in the user-defined grid size, using the path difference of the waves from each ultrasonic transducer (considered a point source
+currently), and then log-scales that to a decibel result for that square. The program also takes into account signal attenuation (both over distance and in air). This is a
+parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
 
 In future, I will be adding:
- - Signal attenuation over distance
  - Ring arrays with a phase difference between each transducer
  - Transducers that are no longer point sources
- - Much more to come!
+ - Hopefully much more!
 
 ### Variables: ###
 
 For you to run the program, you will need to define a few variables:
 
 plotsize (line 8): This defines the side length of the square plot produced by the simulation
+
 cpu_cores (line 9): This defines the number of CPU cores that the program will use when simulating
+
 transducers (line 11): This defines the location of the transducers as a list of [x, y] co-ordinate lists.
-wavelength (line 12): This defines the frequency/wavelength of sound you are simulating (in cm, as that is the standard I am using across the simulation). This DOES NOT have to be
-changed. Currently it is set to 25KHz.
+
+frequency (line 12): This defines the frequency of ultrasound you want to simulate. Currently, this is set to 25 KHz.
