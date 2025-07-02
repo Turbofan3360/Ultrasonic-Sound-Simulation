@@ -78,7 +78,7 @@ if __name__ == "__main__":
 	data_matrix = np.array(data_matrix)
 
 	# Configuring the heatmap plot to be how I like it
-	plt.imshow(data_matrix, cmap="plasma", interpolation="nearest", origin="lower")
+	plt.imshow(data_matrix, cmap="plasma", interpolation="bilinear", origin="lower")
 	plt.colorbar()
 	plt.title("Ultrasound Intensity Around A Transducer Array")
 	plt.xlabel("Distance/CM")
