@@ -60,7 +60,7 @@ def sum_waves(x, y):
 
 def log_scale(amplitude):
     if amplitude:
-        volume_db = 20*log10(amplitude)
+        volume_db = 20*log10(amplitude/0.00002)
     else:
         # volume_db would actually go to −∞, but can't represent that. -200 is low enough
         return 0
