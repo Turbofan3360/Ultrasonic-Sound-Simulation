@@ -8,6 +8,9 @@ import numpy as np
 
 plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in milimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
+frequency = 25000 # in Hz
+transducer_transmitting_sound_pressure_level = 120 # in dB
+
 # Locations of the transducers - formatted as [[x, y, phase offset], [x, y, phase offset]] in milimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
 transducers = [
 	[500, 586, 0], [522.3, 583.1, pi/12], [543, 574.5, (2/12)*pi], [560.8, 560.8, (3/12)*pi], [574.5, 543, (4/12)*pi], [583.1, 522.3, (5/12)*pi],
@@ -21,10 +24,10 @@ transducers = [
 #	[500, 414, 0], [477.7, 416.9, pi/3], [457, 425.5, (2/3)*pi], [439.2, 439.2, pi], [425.5, 457, (4/3)*pi], [416.9, 477.7, (5/3)*pi],
 #	[414, 500, 0], [416.9, 522.3, pi/3], [425.5, 543, (2/3)*pi], [439.2, 560.8, pi], [457, 574.5, (4/3)*pi], [477.7, 583.1, (5/3)*pi]
 #	]
-frequency = 25000 # in Hz
 
 _wavelength = (343/frequency)*1000 # in MM not M
 _attenuation_constant = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3)) # Calculation using Stokes-Kirchoff Model, in Nepers/m
+_press_amplitude = 0.00002 * (10**(transducer_transmitting_sound_pressure_level/20))
 
 def log(string):
 	print(string)
@@ -47,7 +50,7 @@ def sum_waves(x, y):
 		phase_offset += transducers[transducer][2]
 
 		# Calculating wave attenuation
-		amplitude = attenuate(dist)
+		amplitude = _press_amplitude * attenuate(dist)
 
 		# Calculating phasor
 		complex_phase = complex(0, phase_offset)
