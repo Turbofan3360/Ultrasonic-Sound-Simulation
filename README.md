@@ -25,11 +25,14 @@ In future, I will be adding:
 
 For you to run the program, you will need to define a few variables:
 
-plotsize (line 8): This defines the side length of the square plot produced by the simulation in milimeters
+plotsize (line 9): This defines the side length of the square plot produced by the simulation in milimeters
 
-cpu_cores (line 9): This defines the number of CPU cores that the program will use when simulating
+cpu_cores (line 10): This defines the number of CPU cores that the program will use when simulating
 
-transducers (line 11): This defines the location of the transducers as a list of [x, y, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). You can also set
+transducers (line 15): This defines the location of the transducers as a list of [x, y, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). You can also set
 a phase offset (in radians) for the transducer in the 3rd element of the list.
 
-frequency (line 12): This defines the frequency of ultrasound you want to simulate. Currently, this is set to 25 KHz.
+frequency (line 11): This defines the frequency of ultrasound you want to simulate. Currently, this is set to 25 KHz.
+
+transducer_transmitting_sound_pressure_level (line 12): This value (from your transducer datasheet, in dB) is used to calculate the absolute volume of ultrasound at the points in the heatmap,
+rather than just calculating the ultrasound volume relative to the transducer.
