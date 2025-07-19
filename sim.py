@@ -23,7 +23,7 @@ transducers = [
 _wavelength = (343/frequency)*1000 # in MM not M
 _attenuation_constant = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3)) # Calculation using Stokes-Kirchoff Model, in Nepers/m
 _press_amplitude = 0.00002 * (10**(transducer_transmitting_sound_pressure_level/20)) # used for calculating absolute volume of ultrasound at every point
-_ka_besselfunc = (2*pi*_wavelength)/transducer_radius # Used for the bessel function to calculate beam angle data
+_ka_besselfunc = (2*pi*transducer_radius)/_wavelength # Used for the bessel function to calculate beam angle data
 
 def log(string):
     print(string)
@@ -41,9 +41,9 @@ def angle_between_point_transducer(x, y, transducer_no):
 def besselfunc(ka_sin, terms=10):
     func_sum = 0
 
-    for term in range(terms):
-        numerator = ((-1)**term) * ((ka_sin/2)**(2*terms+1))
-        denominator = factorial(term) * factorial(term+1)
+    for t in range(terms):
+        numerator = ((-1)**t) * ((ka_sin/2)**(2*t+1))
+        denominator = factorial(t) * factorial(t+1)
 
         func_sum += numerator/denominator
 
