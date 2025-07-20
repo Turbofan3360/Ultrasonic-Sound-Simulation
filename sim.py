@@ -14,6 +14,8 @@ cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 frequency = 25000 # in Hz
 transducer_transmitting_sound_pressure_level = 120 # in dB
 transducer_radius = 8 # in mm
+max_beam_angle = 100 # in degrees - the angle from the transducer's axis to the edge of its beam
+sinc_scalefactor = 1.38 # scale factor I figured out to make my sinc function behave as I want for beam angle attenuation (~-6dB at 25 degrees)
 
 # Locations of the transducers - formatted as [[x, y, angle (degrees), phase offset], [x, y, angle (degrees), phase offset]] in milimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
 transducers = [
@@ -22,9 +24,7 @@ transducers = [
     [500, 414, -90, 0], [477.7, 416.9, -105, pi/3], [457, 425.5, -120, (2/3)*pi], [439.2, 439.2, -135, pi], [425.5, 457, -150, (4/3)*pi], [416.9, 477.7, -165, (5/3)*pi],
     [414, 500, -180, 0], [416.9, 522.3, 165, pi/3], [425.5, 543, 150, (2/3)*pi], [439.2, 560.8, 135, pi], [457, 574.5, 120, (4/3)*pi], [477.7, 583.1, 105, (5/3)*pi]
      ]
-#transducers = [[500, 500, 90, 0]]
-
-sinc_scalefactor = 1.38 # scale factor I figured out to make my sinc function behave as I want for beam angle attenuation (~-6dB at 25 degrees)
+#transducers = [[500, 500, 180, 0]]
 
 _wavelength = (343/frequency)*1000 # in MM not M
 _attenuation_constant = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3)) # Calculation using Stokes-Kirchoff Model, in Nepers/m
@@ -48,7 +48,12 @@ def angle_between_point_transducer(x, y, transducer_no):
 
     angle_point = atan2(dy, dx) # Calculates the angle (in range +pi -> -pi radians) between the point you're 
 
-    angle = (transducers[transducer_no][2]*_degto_rad) - angle_point # Calculating the angle delta between the transducer's direction and the point (in radians)
+    angle = angle_point - (transducers[transducer_no][2]*_degto_rad) # Calculating the angle delta between the transducer's direction and the point (in radians)
+
+    if angle > pi:
+        angle -= 2*pi
+    elif angle < -pi:
+        angle += 2*pi
 
     return angle
 
@@ -56,7 +61,7 @@ def beam_angle_attenuation(x, y, transducer_no):
     ### THIS IS AN APPROXIMATION USING A SINC FUNCTION AND SCALING IT (AS NO EXACT DATA IS AVAILABLE FOR THE TCT25-16T TRANSDUCER)
     angle = angle_between_point_transducer(x, y, transducer_no)
 
-    if angle > 100*_degto_rad: # For my situation, I'm considering the ring of transducers to be mounted in a solid box (as will be the case when I build this for real). As a result, at angles > 100 degrees, I consider the transducer to have no effect.
+    if abs(angle) > max_beam_angle*_degto_rad: # For my situation, I'm considering the ring of transducers to be mounted in a solid box (as will be the case when I build this for real). As a result, at angles > 100 degrees, I consider the transducer to have no effect.
         return 0
 
     attenuation_factor = abs(sinc(angle))
