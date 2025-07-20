@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+## TODO: CHANGE THE WAY ANGLES ARE HANDLED SO IT IS DONE AS A BEARING (I.E. 0 --> 360 DEGREES, 0 DEGREES IS UP ON THE PLOT)
+## TODO: FIX HOW ABSOLUTE VOLUMES ARE HANDLED SO ULTRASOUND VOLUME CLOSE TO TRANSDUCER == TRANSMITTING SOUND PRESSURE LEVEL
+
 from math import sqrt, pi, log10, atan2, sin
 from cmath import exp
 from multiprocessing import Pool
