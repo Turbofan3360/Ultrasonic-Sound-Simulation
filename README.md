@@ -20,18 +20,18 @@ Any ideas to improve the simulation quality are welcome!
 
 For you to run the program, you will need to define a few variables:
 
-plotsize (line 9): This defines the side length of the square plot produced by the simulation in milimeters (mm)
+_plotsize (line 9):_ This defines the side length of the square plot produced by the simulation in milimeters (mm)
 
-cpu_cores (line 10): This defines the number of CPU cores that the program will use when simulating
+_cpu_cores (line 10):_ This defines the number of CPU cores that the program will use when simulating
 
-frequency (line 11): This defines the frequency of ultrasound you want to simulate in Hz. Currently, this is set to 25 KHz.
+_frequency (line 11):_ This defines the frequency of ultrasound you want to simulate in Hz. Currently, this is set to 25 KHz.
 
-transducer_transmitting_sound_pressure_level (line 12): This value (from your transducer datasheet, in dB) is used to calculate the absolute volume of ultrasound at the points in the heatmap, rather than just calculating the ultrasound volume relative to the transducer.
+_transducer_transmitting_sound_pressure_level (line 12):_ This value (from your transducer datasheet, in dB) is used to calculate the absolute volume of ultrasound at the points in the heatmap, rather than just calculating the ultrasound volume relative to the transducer.
 
-r0 (line 13): This is the distance at which the transducer_transmitting_sound_pressure_level is defined at (in meters)
+_r0 (line 13):_ This is the distance at which the transducer_transmitting_sound_pressure_level is defined at (in meters)
 
-max_beam_angle (line 14): This determines the angle from the transducer's central axis to the edge of its beam (in degrees). Set to 180 to have a full beam.
+_max_beam_angle (line 14):_ This determines the angle from the transducer's central axis to the edge of its beam (in degrees). Set to 180 to have a full beam.
 
-sinc_scalefact (line 15): This is used to calculate the beam angle plot - for more details see "The Code" above. This will need to be tuned for different kinds of transducers (currently suited for the TCT25-16T)
+_sinc_scalefact (line 15):_ This is used to calculate the beam angle plot - for more details see "The Code" above. This will need to be tuned for different kinds of transducers (currently suited for the TCT25-16T)
 
-transducers (line 15): This defines the location of the transducers as a list of [x, y, axis angle, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). The axis angle is the direction in which the transducer is pointing - measured in degrees above the positive x-axis (range -180 --> 180 degrees). You can also set a phase offset (in radians) for the transducer in the 3rd element of the list.
+_transducers (line 15):_ This defines the location of the transducers as a list of [x, y, axis angle, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). The axis angle is the direction in which the transducer is pointing - measured in degrees above the positive x-axis (range -180 --> 180 degrees). You can also set a phase offset (in radians) for the transducer in the 3rd element of the list.
