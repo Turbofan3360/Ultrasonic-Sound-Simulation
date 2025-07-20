@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-## TODO: FIX HOW ABSOLUTE VOLUMES ARE HANDLED SO ULTRASOUND VOLUME CLOSE TO TRANSDUCER == TRANSMITTING SOUND PRESSURE LEVEL
-
 from math import sqrt, pi, log10, atan2, sin
 from cmath import exp
 from multiprocessing import Pool
@@ -12,7 +10,7 @@ plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 frequency = 25000 # in Hz
 transducer_transmitting_sound_pressure_level = 120 # in dB
-transducer_radius = 8 # in mm
+r0 = 0.3 # The distance at which transducer_transmitting_sound_pressure_level is measured, in M
 max_beam_angle = 100 # in degrees - the angle from the transducer's axis to the edge of its beam
 sinc_scalefactor = 1.38 # scale factor I figured out to make my sinc function behave as I want for beam angle attenuation (~-6dB at 25 degrees)
 
@@ -23,7 +21,6 @@ transducers = [
     [500, 414, -90, 0], [477.7, 416.9, -105, pi/3], [457, 425.5, -120, (2/3)*pi], [439.2, 439.2, -135, pi], [425.5, 457, -150, (4/3)*pi], [416.9, 477.7, -165, (5/3)*pi],
     [414, 500, -180, 0], [416.9, 522.3, 165, pi/3], [425.5, 543, 150, (2/3)*pi], [439.2, 560.8, 135, pi], [457, 574.5, 120, (4/3)*pi], [477.7, 583.1, 105, (5/3)*pi]
      ]
-#transducers = [[500, 500, 180, 0]]
 
 _wavelength = (343/frequency)*1000 # in MM not M
 _attenuation_constant = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3)) # Calculation using Stokes-Kirchoff Model, in Nepers/m
@@ -84,8 +81,8 @@ def sum_waves(x, y):
         phase_offset *= 2*pi
         phase_offset += transducers[transducer][3]
 
-        # Calculating wave attenuation due to distance
-        amplitude = _press_amplitude * attenuate(dist)
+        # Calculating wave attenuation due to distance and atmospheric absorbtion, and then converting that to an absolute pressure/wave amplitude
+        amplitude = _press_amplitude * r0 * attenuate(dist)
 
         # Calculating the strength of the ultrasound beam from the transducer at this point
         angle_attenuation = beam_angle_attenuation(x, y, transducer)
@@ -131,21 +128,36 @@ def generate_data_matrix_row(y):
 
 	return data_row
 
+def listoflists_min_max(data): # Finds the minimum value in a list of lists (ignoring values that are 0, because they are blanked out in the heatmap)
+    current_min = 1000000
+    current_max = 0
+    for a in range(len(data)):
+        for b in range(len(data[a])):
+            if data[a][b] < current_min and data[a][b] != 0:
+                current_min = data[a][b]
+            if data[a][b] > current_max:
+                current_max = data[a][b]
+
+    return current_min, current_max
 
 if __name__ == "__main__":
-	y_values = list(range(plotsize+1))
-	with Pool(processes=cpu_cores) as pool:
-		data_matrix = pool.map(generate_data_matrix_row, y_values)
+    y_values = list(range(plotsize+1))
+    with Pool(processes=cpu_cores) as pool:
+        data_matrix = pool.map(generate_data_matrix_row, y_values)
 
-	data_matrix = np.array(data_matrix)
+    data_matrix = np.array(data_matrix)
+    data_min, data_max = listoflists_min_max(data_matrix)
 
-	plt.imshow(data_matrix, cmap="plasma", interpolation="bilinear", origin="lower")
-	plt.colorbar()
-	plt.title("Ultrasound Intensity (dB) Around Transducer Array")
-	plt.xlabel("Distance/MM")
-	plt.ylabel("Distance/MM")
+    cmap = plt.get_cmap("plasma").copy()
+    cmap.set_under("lightgrey")
 
-	plt.show()
+    plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=0.75*data_min, vmax=data_max)
+    plt.colorbar()
+    plt.title("Ultrasound Intensity (dB) Around Transducer Array")
+    plt.xlabel("Distance/MM")
+    plt.ylabel("Distance/MM")
+
+    plt.show()
 
 #    data = [beam_angle_attenuation(i*(pi/180)) for i in range(180)]
 #    angles = np.arange(len(data))  # 0°, 1°, 2°, ..., 89°
