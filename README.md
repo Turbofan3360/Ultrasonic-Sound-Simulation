@@ -2,37 +2,36 @@
 
 ### Source and Idea: ### 
 
-This is based on a project from the University of Chicago's SAND Lab (Project page: <https://sandlab.cs.uchicago.edu/jammer/>). The aim of the project was to create a wearable jammer
-that uses ultrasonic sound to jam many common microphones (e.g. used in Alexa/Google Home voice assistants, mobile phones, e.t.c.).
+This is based on a project from the University of Chicago's SAND Lab (Project page: <https://sandlab.cs.uchicago.edu/jammer/>). The aim of the project was to create a wearable jammer that uses ultrasonic sound to jam many common microphones (e.g. used in Alexa/Google Home voice assistants, mobile phones, e.t.c.).
 
-I decided to try and use their idea to create a stationary ultrasonic jammer. The key issue with a stationary jammer is the potential blind spots, which aren't 'blurred out' by movement
-(as a wearable jammer gets moved randomly). To solve this, I need to work out an approach that uses multiple signal drivers, rather than just one, to try and remove blind spots. However,
-I needed to simulate this in order to come up with a valid solution - hence this piece of code.
+I decided to try and use their idea to create a stationary ultrasonic jammer. The key issue with a stationary jammer is the potential blind spots, which aren't 'blurred out' by movement (as a wearable jammer gets moved randomly). To solve this, I need to work out an approach that uses multiple signal drivers, rather than just one, to try and remove blind spots. However, I needed to simulate this in order to come up with a valid solution - hence this piece of code.
 
 _More details about their project and simulation (page 5 of the paper) in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
 ### The Code: ###
 
-This simulation sums up the waves at every point in the user-defined grid size (using phasors, i.e. Euler's formula), using the path difference of the waves from each ultrasonic
-transducer (considered a point source currently), and then log-scales that to a decibel result for that square. The program also takes into account signal attenuation (both over
-distance and in air). This is a parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
+This simulation sums up the waves at every point in the user-defined grid size (using phasors, i.e. Euler's formula), using the path difference of the waves from each ultrasonic transducer, and then log-scales that to a decibel result for that square. The decibel result is the absolute ultrasound volume at that point. The program also takes into account signal attenuation (both over distance and in atmosphere). This is a parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
 
-In future, I will be adding:
- - Transducers that are no longer point sources
- - Hopefully much more!
+The code simulates the transducers' beam angle plots as a sinc function, which I tuned to what I thought it should be for the TCT25-16T transducer I intend to use - there was no precise beam angle plot available. The sinc function was based on the one datapoint I had: the attenuation is -6dB @ 25 degrees from the transducer's axis. This will need to be adjusted for other transducers - it's all in the sinc() function.
+
+Any ideas to improve the simulation quality are welcome!
 
 ### Variables: ###
 
 For you to run the program, you will need to define a few variables:
 
-plotsize (line 9): This defines the side length of the square plot produced by the simulation in milimeters
+plotsize (line 9): This defines the side length of the square plot produced by the simulation in milimeters (mm)
 
 cpu_cores (line 10): This defines the number of CPU cores that the program will use when simulating
 
-transducers (line 15): This defines the location of the transducers as a list of [x, y, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). You can also set
-a phase offset (in radians) for the transducer in the 3rd element of the list.
+frequency (line 11): This defines the frequency of ultrasound you want to simulate in Hz. Currently, this is set to 25 KHz.
 
-frequency (line 11): This defines the frequency of ultrasound you want to simulate. Currently, this is set to 25 KHz.
+transducer_transmitting_sound_pressure_level (line 12): This value (from your transducer datasheet, in dB) is used to calculate the absolute volume of ultrasound at the points in the heatmap, rather than just calculating the ultrasound volume relative to the transducer.
 
-transducer_transmitting_sound_pressure_level (line 12): This value (from your transducer datasheet, in dB) is used to calculate the absolute volume of ultrasound at the points in the heatmap,
-rather than just calculating the ultrasound volume relative to the transducer.
+r0 (line 13): This is the distance at which the transducer_transmitting_sound_pressure_level is defined at (in meters)
+
+max_beam_angle (line 14): This determines the angle from the transducer's central axis to the edge of its beam (in degrees). Set to 180 to have a full beam.
+
+sinc_scalefact (line 15): This is used to calculate the beam angle plot - for more details see "The Code" above. This will need to be tuned for different kinds of transducers (currently suited for the TCT25-16T)
+
+transducers (line 15): This defines the location of the transducers as a list of [x, y, axis angle, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). The axis angle is the direction in which the transducer is pointing - measured in degrees above the positive x-axis (range -180 --> 180 degrees). You can also set a phase offset (in radians) for the transducer in the 3rd element of the list.

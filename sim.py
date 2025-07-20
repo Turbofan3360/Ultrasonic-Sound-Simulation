@@ -129,7 +129,7 @@ def generate_data_matrix_row(y):
 	return data_row
 
 def listoflists_min_max(data): # Finds the minimum value in a list of lists (ignoring values that are 0, because they are blanked out in the heatmap)
-    current_min = 1000000
+    current_min = (len(transducers)+1)*transducer_transmitting_sound_pressure_level
     current_max = 0
     for a in range(len(data)):
         for b in range(len(data[a])):
