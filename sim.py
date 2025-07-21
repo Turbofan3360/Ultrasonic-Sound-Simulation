@@ -12,7 +12,8 @@ frequency = 25000 # in Hz
 transducer_transmitting_sound_pressure_level = 120 # in dB
 r0 = 0.3 # The distance at which transducer_transmitting_sound_pressure_level is measured, in M
 max_beam_angle = 100 # in degrees - the angle from the transducer's axis to the edge of its beam
-sinc_scalefactor = 1.38 # scale factor I figured out to make my sinc function behave as I want for beam angle attenuation (~-6dB at 25 degrees)
+sinc_scalefactor = 1.15 # scale factor I figured out to make my sinc function behave as I want for beam angle attenuation (~-6dB at 30 degrees)
+dBA = True # Boolean to determine whether you want the output as dBA (True) or dB (False)
 
 # Locations of the transducers - formatted as [[x, y, angle (degrees), phase offset], [x, y, angle (degrees), phase offset]] in milimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
 transducers = [
@@ -26,6 +27,16 @@ _wavelength = (343/frequency)*1000 # in MM not M
 _attenuation_constant = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3)) # Calculation using Stokes-Kirchoff Model, in Nepers/m
 _press_amplitude = 0.00002 * (10**(transducer_transmitting_sound_pressure_level/20)) # used for calculating absolute volume of ultrasound at every point
 _degto_rad = pi/180
+
+def AWeight():
+    numerator = 148693636*frequency**4
+    denominator = (frequency**2 + 20.6**2)*sqrt((frequency**2+107.7**2)*(frequency**2+737.9**2))*(frequency**2+12194**2)
+    Ra = numerator/denominator
+    aweight = 20*log10(Ra)+2
+    return aweight
+
+if dBA:
+    _a_weight = AWeight() # Calculating the weighting if the user wants the results to be in dBA
 
 def log(string):
     print(string)
@@ -105,6 +116,10 @@ def log_scale(amplitude):
     else:
         # volume_db would actually go to −∞, but can't represent that. -200 is low enough
         return 0
+
+    if dBA:
+        volume_db += _a_weight
+
     return volume_db
 
 def attenuate(dist):
@@ -151,9 +166,14 @@ if __name__ == "__main__":
     cmap = plt.get_cmap("plasma").copy()
     cmap.set_under("lightgrey")
 
-    plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=0.75*data_min, vmax=data_max)
+    plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=data_min, vmax=data_max)
     plt.colorbar()
-    plt.title("Ultrasound Intensity (dB) Around Transducer Array")
+
+    if dBA:
+        plt.title("Ultrasound Intensity (dBA) Around Transducer Array")
+    else:
+        plt.title("Ultrasound Intensity (dB) Around Transducer Array")
+    
     plt.xlabel("Distance/MM")
     plt.ylabel("Distance/MM")
 

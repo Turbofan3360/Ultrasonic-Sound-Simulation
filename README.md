@@ -34,4 +34,6 @@ _max_beam_angle (line 14):_ This determines the angle from the transducer's cent
 
 _sinc_scalefact (line 15):_ This is used to calculate the beam angle plot - for more details see "The Code" above. This will need to be tuned for different kinds of transducers (currently suited for the TCT25-16T)
 
+_dBA (line 16):_ If set to True, the output heatmap will be in dBA. If set to False, the output heatmap will be left in dB
+
 _transducers (line 15):_ This defines the location of the transducers as a list of [x, y, axis angle, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). The axis angle is the direction in which the transducer is pointing - measured in degrees above the positive x-axis (range -180 --> 180 degrees). You can also set a phase offset (in radians) for the transducer in the 3rd element of the list.
