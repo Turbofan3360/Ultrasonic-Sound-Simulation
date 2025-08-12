@@ -8,6 +8,8 @@ I decided to try and use their idea to create a stationary ultrasonic jammer. Th
 
 _More details about their project and simulation (page 5 of the paper) in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
+_This code still doesn't precisely resemble the simulations in the paper above (although it is a reasonably accuracte simulation). My goal is to learn more of the maths and physics used in the paper's simulation, and then use that to update my code._
+
 ![Example image - 9 transducers, planar arrangment, no phase offsets](1_signal_9_transducers_planar.png)
 ![Example image - 24 transducers, ring arrangement, no phase offsets](1_signal_24_transducers_ring.png)
 
