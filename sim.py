@@ -6,7 +6,7 @@ from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
 
-plotsize = 2000 # Distance around the ultrasonic array that you're modelling (in milimeters)
+plotsize = 2000 # Distance around the ultrasonic array that you're modelling (in millimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 frequency = 25000 # in Hz
 transducer_transmitting_sound_pressure_level = 120 # in dB
@@ -15,7 +15,7 @@ max_beam_angle = 100 # in degrees - the angle from the transducer's axis to the 
 sinc_scalefactor = 1.15 # scale factor I figured out to make my sinc function behave as I want for beam angle attenuation (~-6dB at 30 degrees)
 dBA = True # Boolean to determine whether you want the output as dBA (True) or dB (False)
 
-# Locations of the transducers - formatted as [[x, y, angle (degrees), phase offset], [x, y, angle (degrees), phase offset]] in milimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
+# Locations of the transducers - formatted as [[x, y, angle (degrees), phase offset], [x, y, angle (degrees), phase offset]] in millimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
 #transducers = [
  #   [500, 586, 90, 0], [522.3, 583.1, 75,pi/3], [543, 574.5, 60, (2/3)*pi], [560.8, 560.8, 45, pi], [574.5, 543, 30, (4/3)*pi], [583.1, 522.3, 15, (5/3)*pi],
   #  [586, 500, 0, 0], [583.1, 477.7, -15, pi/3], [574.5, 457, -30, (2/3)*pi], [560.8, 439.2, -45, pi], [543, 425.5, -60, (4/3)*pi], [522.3, 416.9, -75, (5/3)*pi],
@@ -62,7 +62,7 @@ def angle_between_point_transducer(x, y, transducer_no):
     dx = x - transducers[transducer_no][0]
     dy = y - transducers[transducer_no][1]
 
-    angle_point = atan2(dy, dx) # Calculates the angle (in range +pi -> -pi radians) between the point you're 
+    angle_point = atan2(dy, dx)
 
     angle = angle_point - (transducers[transducer_no][2]*_degto_rad) # Calculating the angle delta between the transducer's direction and the point (in radians)
 
@@ -123,7 +123,6 @@ def log_scale(amplitude):
     if amplitude:
         volume_db = 20*log10(amplitude/0.00002)
     else:
-        # volume_db would actually go to −∞, but can't represent that. -200 is low enough
         return 0
 
     if dBA:
@@ -185,14 +184,3 @@ if __name__ == "__main__":
     plt.ylabel("Distance/MM")
 
     plt.show()
-
-#    data = [beam_angle_attenuation(i*(pi/180)) for i in range(180)]
-#    angles = np.arange(len(data))  # 0°, 1°, 2°, ..., 89°
-
- #   plt.figure(figsize=(8, 4))
-  #  plt.plot(angles, data, marker='o')
-   # plt.title("Beam Attenuation vs Angle")
-    #plt.xlabel("Angle (degrees)")
-    #plt.ylabel("Amplitude Attenuation")
-    #plt.grid(True)
-    #plt.show()

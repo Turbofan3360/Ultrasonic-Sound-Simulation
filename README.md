@@ -8,7 +8,7 @@ I decided to try and use their idea to create a stationary ultrasonic jammer. Th
 
 _More details about their project and simulation (page 5 of the paper) in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
-_This code still doesn't precisely resemble the simulations in the paper above (although it is a reasonably accuracte simulation). My goal is to learn more of the maths and physics used in the paper's simulation, and then use that to update my code._
+_This code still doesn't precisely resemble the simulations in the paper above (although it is a reasonably accurate simulation). My goal is to learn more of the maths and physics used in the paper's simulation, and then use that to update my code._
 
 ![Example image - 9 transducers, planar arrangment, no phase offsets](1_signal_9_transducers_planar.png)
 ![Example image - 24 transducers, ring arrangement, no phase offsets](1_signal_24_transducers_ring.png)
@@ -25,7 +25,7 @@ Any ideas to improve the simulation quality are welcome!
 
 For you to run the program, you will need to define a few variables:
 
-_plotsize (line 9):_ This defines the side length of the square plot produced by the simulation in milimeters (mm)
+_plotsize (line 9):_ This defines the side length of the square plot produced by the simulation in millimeters (mm)
 
 _cpu_cores (line 10):_ This defines the number of CPU cores that the program will use when simulating
 
@@ -41,4 +41,4 @@ _sinc_scalefact (line 15):_ This is used to calculate the beam angle plot - for 
 
 _dBA (line 16):_ If set to True, the output heatmap will be in dBA. If set to False, the output heatmap will be left in dB
 
-_transducers (line 15):_ This defines the location of the transducers as a list of [x, y, axis angle, phase offset] co-ordinate lists (co-ordinates in milimeters from the origin). The axis angle is the direction in which the transducer is pointing - measured in degrees above the positive x-axis (range -180 --> 180 degrees). You can also set a phase offset (in radians) for the transducer in the 3rd element of the list.
+_transducers (line 15):_ This defines the location of the transducers as a list of [x, y, axis angle, phase offset] co-ordinate lists (co-ordinates in millimeters from the origin). The axis angle is the direction in which the transducer is pointing - measured in degrees above the positive x-axis (range -180 --> 180 degrees). You can also set a phase offset (in radians) for the transducer in the 3rd element of the list.
