@@ -8,6 +8,9 @@ I decided to try and use their idea to create a stationary ultrasonic jammer. Th
 
 _More details about their project and simulation (page 5 of the paper) in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
+![Example image - 9 transducers, planar arrangment, no phase offsets](1_signal_9_transducers_planar.png)
+![Example image - 24 transducers, ring arrangement, no phase offsets](1_signal_24_transducers_ring.png)
+
 ### The Code: ###
 
 This simulation sums up the waves at every point in the user-defined grid size (using phasors, i.e. Euler's formula), using the path difference of the waves from each ultrasonic transducer, and then log-scales that to a decibel result for that square. The decibel result is the absolute ultrasound volume at that point. The program also takes into account signal attenuation (both over distance and in atmosphere). This is a parallelised program, so you will also need to define the number of CPU cores that the program can utilize.

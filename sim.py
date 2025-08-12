@@ -6,7 +6,7 @@ from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import numpy as np
 
-plotsize = 1000 # Distance around the ultrasonic array that you're modelling (in milimeters)
+plotsize = 2000 # Distance around the ultrasonic array that you're modelling (in milimeters)
 cpu_cores = 6 # Number of CPU cores you want to use to run the simulation
 frequency = 25000 # in Hz
 transducer_transmitting_sound_pressure_level = 120 # in dB
@@ -16,12 +16,21 @@ sinc_scalefactor = 1.15 # scale factor I figured out to make my sinc function be
 dBA = True # Boolean to determine whether you want the output as dBA (True) or dB (False)
 
 # Locations of the transducers - formatted as [[x, y, angle (degrees), phase offset], [x, y, angle (degrees), phase offset]] in milimeters from origin and phase offset in radians (i.e. range of 0 -> 2*pi)
+#transducers = [
+ #   [500, 586, 90, 0], [522.3, 583.1, 75,pi/3], [543, 574.5, 60, (2/3)*pi], [560.8, 560.8, 45, pi], [574.5, 543, 30, (4/3)*pi], [583.1, 522.3, 15, (5/3)*pi],
+  #  [586, 500, 0, 0], [583.1, 477.7, -15, pi/3], [574.5, 457, -30, (2/3)*pi], [560.8, 439.2, -45, pi], [543, 425.5, -60, (4/3)*pi], [522.3, 416.9, -75, (5/3)*pi],
+   # [500, 414, -90, 0], [477.7, 416.9, -105, pi/3], [457, 425.5, -120, (2/3)*pi], [439.2, 439.2, -135, pi], [425.5, 457, -150, (4/3)*pi], [416.9, 477.7, -165, (5/3)*pi],
+    #[414, 500, -180, 0], [416.9, 522.3, 165, pi/3], [425.5, 543, 150, (2/3)*pi], [439.2, 560.8, 135, pi], [457, 574.5, 120, (4/3)*pi], [477.7, 583.1, 105, (5/3)*pi]
+     #]
+
 transducers = [
-    [500, 586, 90, 0], [522.3, 583.1, 75,pi/3], [543, 574.5, 60, (2/3)*pi], [560.8, 560.8, 45, pi], [574.5, 543, 30, (4/3)*pi], [583.1, 522.3, 15, (5/3)*pi],
-    [586, 500, 0, 0], [583.1, 477.7, -15, pi/3], [574.5, 457, -30, (2/3)*pi], [560.8, 439.2, -45, pi], [543, 425.5, -60, (4/3)*pi], [522.3, 416.9, -75, (5/3)*pi],
-    [500, 414, -90, 0], [477.7, 416.9, -105, pi/3], [457, 425.5, -120, (2/3)*pi], [439.2, 439.2, -135, pi], [425.5, 457, -150, (4/3)*pi], [416.9, 477.7, -165, (5/3)*pi],
-    [414, 500, -180, 0], [416.9, 522.3, 165, pi/3], [425.5, 543, 150, (2/3)*pi], [439.2, 560.8, 135, pi], [457, 574.5, 120, (4/3)*pi], [477.7, 583.1, 105, (5/3)*pi]
+    [500, 586, 90, 0], [522.3, 583.1, 75,0], [543, 574.5, 60, 0], [560.8, 560.8, 45, 0], [574.5, 543, 30, 0], [583.1, 522.3, 15, 0],
+    [586, 500, 0, 0], [583.1, 477.7, -15, 0], [574.5, 457, -30, 0], [560.8, 439.2, -45, 0], [543, 425.5, -60, 0], [522.3, 416.9, -75, 0],
+    [500, 414, -90, 0], [477.7, 416.9, -105, 0], [457, 425.5, -120, 0], [439.2, 439.2, -135, 0], [425.5, 457, -150, 0], [416.9, 477.7, -165, 0],
+    [414, 500, -180, 0], [416.9, 522.3, 165, 0], [425.5, 543, 150, 0], [439.2, 560.8, 135, 0], [457, 574.5, 120, 0], [477.7, 583.1, 105, 0]
      ]
+#transducers = [[0, 38.3, 90, 0], [7.47, 37.55, 78.75, (2/9)*pi], [14.65, 35.37, 67.5, (4/9)*pi], [21.27, 31.83, 56.25, (6/9)*pi], [27.07, 27.07, 45, (8/9)*pi], [31.83, 21.27, 33.75, (10/9)*pi], [35.37, 14.65, 22.5, (12/9)*pi], [37.55, 7.47, 11.25, (14/9)*pi], [38.28, 0, 0, (16/9)*pi]]
+#transducers = [[400, 0, 90, 0], [425, 0, 90, (2/9)*pi], [450, 0, 90, (4/9)*pi], [475, 0, 90, (6/9)*pi], [500, 0, 90, (8/9)*pi], [525, 0, 90, (10/9)*pi], [550, 0, 90, (12/9)*pi], [575, 0, 90, (14/9)*pi], [600, 0, 90, (16/9)*pi]]
 
 _wavelength = (343/frequency)*1000 # in MM not M
 _attenuation_constant = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3)) # Calculation using Stokes-Kirchoff Model, in Nepers/m
@@ -162,10 +171,8 @@ if __name__ == "__main__":
 
     data_matrix = np.array(data_matrix)
     data_min, data_max = listoflists_min_max(data_matrix)
-
     cmap = plt.get_cmap("plasma").copy()
     cmap.set_under("lightgrey")
-
     plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=data_min, vmax=data_max)
     plt.colorbar()
 
