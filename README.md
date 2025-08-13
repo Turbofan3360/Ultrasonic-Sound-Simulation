@@ -15,7 +15,7 @@ _This code still doesn't precisely resemble the simulations in the paper above (
 
 ### The Code: ###
 
-This simulation sums up the waves at every point in the user-defined grid size (using phasors, i.e. Euler's formula), using the path difference of the waves from each ultrasonic transducer, and then log-scales that to a decibel result for that square. The decibel result is the absolute ultrasound volume at that point. The program also takes into account signal attenuation (both over distance and in atmosphere). This is a parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
+This simulation sums up the waves at every point in the user-defined grid size (using phasors, i.e. Euler's formula), using the path difference of the waves from each ultrasonic transducer, and then log-scales that to a decibel result for that square. The decibel value is the absolute ultrasound volume at that point. The program takes into account signal attenuation (both over distance and in atmosphere). This is a parallelised program, so you will also need to define the number of CPU cores that the program can utilize.
 
 The code simulates the transducers' beam angle plots as a sinc function, which I tuned to what I thought it should be for the TCT25-16T transducer I intend to use - there was no precise beam angle plot available. The sinc function was based on the one datapoint I had: the attenuation is -6dB @ 25 degrees from the transducer's axis. This will need to be adjusted for other transducers - it's all in the sinc() function.
 
