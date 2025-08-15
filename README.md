@@ -10,8 +10,8 @@ _More details about their project and simulation (page 5 of the paper) in their 
 
 _This code still doesn't precisely resemble the simulations in the paper above (although it is a reasonably accurate simulation). My goal is to learn more of the maths and physics used in the paper's simulation, and then use that to update my code._
 
-![Example image - 9 transducers, planar arrangment, no phase offsets](1_signal_9_transducers_planar.png)
-![Example image - 24 transducers, ring arrangement, no phase offsets](1_signal_24_transducers_ring.png)
+![Example image - 9 transducers, planar arrangment, no phase offsets](~/images/1_signal_9_transducers_planar.png)
+![Example image - 24 transducers, ring arrangement, no phase offsets](~/images/1_signal_24_transducers_ring.png)
 
 ### The Code: ###
 
