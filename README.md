@@ -6,7 +6,7 @@ This is based on a project from the University of Chicago's SAND Lab (Project pa
 
 I decided to try and use their idea to create a stationary ultrasonic jammer. The key issue with a stationary jammer is the potential blind spots, which aren't 'blurred out' by movement (as a wearable jammer gets moved randomly). To solve this, I need to work out an approach that uses multiple signal drivers, rather than just one, to try and remove blind spots. However, I needed to simulate this in order to come up with a valid solution - hence this piece of code.
 
-_More details about their project and simulation (page 5 of the paper) in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
+_More details about their project and simulation in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
 _This code still doesn't precisely resemble the simulations in the paper above (although it is a reasonably accurate simulation). My goal is to learn more of the maths and physics used in the paper's simulation, and then use that to update my code._
 
