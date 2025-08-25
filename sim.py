@@ -7,19 +7,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Distance around the ultrasonic array that you're modelling (in millimeters)
-plotsize = 2000
+PLOTSIZE = 2000
 # Number of CPU cores you want to use to run the simulation
-cpu_cores = 6
+CPU_CORES = 6
 # Simulated sound frequency in Hz
-frequency = 25000 
+FREQUENCY = 25000 
 # Comes from transducer datasheet, in dB
-transducer_transmitting_sound_pressure_level = 120
-# The distance at which transducer_transmitting_sound_pressure_level is measured, in M
-r0 = 0.3
+TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL = 120
+# The distance at which transducer's transmitting sound pressure level is measured, in M
+R0 = 0.3
 # In degrees - the angle from the transducer's axis to the edge of its beam
-max_beam_angle = 100
+MAX_BEAM_ANGLE = 100
 # Scale factor to make the sinc function behave as wanted for beam angle attenuation
-sinc_scalefactor = 1.15
+SINC_SCALEFACTOR = 1.15
 # Boolean to determine whether you want the output as dBA (True) or dB (False)
 dBA = True
 
@@ -32,20 +32,20 @@ transducers = [
      ]
 
 # Wavelength in MM
-_WAVELENGTH = (343/frequency)*1000
+_WAVELENGTH = (343/FREQUENCY)*1000
 # Calculation using Stokes-Kirchoff Model, in Nepers/m
-_ATTENUATION_CONSTANT = (2*1.85e-5*(2*pi*frequency)**2)/(3*1.225*(343**3))
+_ATTENUATION_CONSTANT = (2*1.85e-5*(2*pi*FREQUENCY)**2)/(3*1.225*(343**3))
 # Used for calculating absolute volume of ultrasound at every point
-_PRESS_AMPLITUDE = 0.00002 * (10**(transducer_transmitting_sound_pressure_level/20))
+_PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
 _DEG_TO_RAD = pi/180
 
 def log(string):
     print(string)
 
 def dba_weight():
-    numerator = 148693636*frequency**4
-    denominator = (frequency**2 + 20.6**2)*sqrt((frequency**2+107.7**2)*(frequency**2+737.9**2))*(frequency**2+12194**2)
-    
+    numerator = 148693636*FREQUENCY**4
+    denominator = (FREQUENCY**2 + 20.6**2)*sqrt((FREQUENCY**2+107.7**2)*(FREQUENCY**2+737.9**2))*(FREQUENCY**2+12194**2)
+
     Ra = numerator/denominator
     aweight = 20*log10(Ra)+2
 
@@ -53,14 +53,14 @@ def dba_weight():
 
 def sinc(angle):
     # Input angle in radians
-    x = pi*angle*sinc_scalefactor
+    x = pi*angle*SINC_SCALEFACTOR
 
     if x == 0:
         return 1
 
     return sin(x)/x
 
-def angle_between_point_transducer(x, y, transducer_no):
+def angle_transducer_to_point(x, y, transducer_no):
     dx = x - transducers[transducer_no][0]
     dy = y - transducers[transducer_no][1]
 
@@ -78,11 +78,11 @@ def angle_between_point_transducer(x, y, transducer_no):
 
 def beam_angle_attenuation(x, y, transducer_no):
     # This is a beam angle attenuation approximation using a sinc() function, and scaling it
-    angle = angle_between_point_transducer(x, y, transducer_no)
+    angle = angle_transducer_to_point(x, y, transducer_no)
 
     # If angle > specified cutoff, then this just assumes 0 volume from transducer
     # Useful for simulating certain setups
-    if abs(angle) > max_beam_angle*_DEG_TO_RAD:
+    if abs(angle) > MAX_BEAM_ANGLE*_DEG_TO_RAD:
         return 0
 
     attenuation_factor = abs(sinc(angle))
@@ -108,7 +108,7 @@ def sum_waves(x, y):
 
         # Calculating wave attenuation due to distance/atmospheric absorbtion
         # Then converting that to an absolute pressure amplitude
-        amplitude = _PRESS_AMPLITUDE * r0 * attenuate(dist)
+        amplitude = _PRESS_AMPLITUDE * R0 * attenuate(dist)
 
         # Calculating the strength of the ultrasound beam from the transducer at this point
         angle_attenuation = beam_angle_attenuation(x, y, transducer)
@@ -151,21 +151,21 @@ def attenuate(dist):
 	return amplitude
 
 def generate_data_matrix_row(y):
-	data_row = (plotsize+1)*[0]
+	data_row = (PLOTSIZE+1)*[0]
 	log("Processing row {}...".format(y))
 	
-	for x in range(plotsize+1):
+	for x in range(PLOTSIZE+1):
 		wave = sum_waves(x, y)
 
 		data_row[x] = wave
 
 	return data_row
 
-def listoflists_min_max(data):
+def matrix_min_max(data):
     # Finds the minimum value in a list of lists 
     # Ignores values that are 0, as they are blanked out in the heatmap
 
-    current_min = (len(transducers)+1)*transducer_transmitting_sound_pressure_level
+    current_min = (len(transducers)+1)*TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL
     current_max = 0
     for a in range(len(data)):
         for b in range(len(data[a])):
@@ -182,12 +182,12 @@ if __name__ == "__main__":
         _A_WEIGHT = dba_weight()
 
 
-    y_values = list(range(plotsize+1))
-    with Pool(processes=cpu_cores) as pool:
+    y_values = list(range(PLOTSIZE+1))
+    with Pool(processes=CPU_CORES) as pool:
         data_matrix = pool.map(generate_data_matrix_row, y_values)
 
     data_matrix = np.array(data_matrix)
-    data_min, data_max = listoflists_min_max(data_matrix)
+    data_min, data_max = matrix_min_max(data_matrix)
     cmap = plt.get_cmap("plasma").copy()
     cmap.set_under("lightgrey")
     plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=data_min, vmax=data_max)
