@@ -45,7 +45,7 @@ def logger(string):
     """
     print(string)
 
-def dba_weight():
+def computeDBAWeight():
     """
     Calculates the adjustment value to convert from decibels to A-weighted decibels.
 
@@ -76,11 +76,11 @@ def sinc(angle):
 
     return sin(x)/x
 
-def angle_transducer_to_point(x, y, transducer_no):
+def computeTransducerToPointAngle(x, y, transducer_no):
     """
     Calculates the angle between the transducer's central axis and the specified point.
 
-    Transducer's central axis defined in the TRANSDUCERS list. 
+    Transducer's central axis defined in the TRANSDUCERS list.
     """
 
     dx = x - TRANSDUCERS[transducer_no][0]
@@ -99,7 +99,7 @@ def angle_transducer_to_point(x, y, transducer_no):
 
     return angle
 
-def beam_angle_attenuation(x, y, transducer_no):
+def computeAngleAttenuation(x, y, transducer_no):
     """
     Uses the transducer's central axis -> point angle, and the sinc function.
     Determines the transducer's beam strength at the specified point.
@@ -108,7 +108,7 @@ def beam_angle_attenuation(x, y, transducer_no):
     """
 
     # This is a beam angle attenuation approximation using a sinc() function, and scaling it
-    angle = angle_transducer_to_point(x, y, transducer_no)
+    angle = computeTransducerToPointAngle(x, y, transducer_no)
 
     # If angle > specified cutoff, then this just assumes 0 volume from transducer
     # Useful for simulating certain setups
@@ -119,7 +119,7 @@ def beam_angle_attenuation(x, y, transducer_no):
 
     return attenuation_factor
 
-def distance_wavelengths(x, y, transducer_no):
+def computeDistanceInWavelengths(x, y, transducer_no):
     """
     Calculates the absolute distance between the transducer and specified point.
     Also calculates the distance in terms of wavelengths of sound that is being modelled.
@@ -131,7 +131,7 @@ def distance_wavelengths(x, y, transducer_no):
 
     return dist_lambdas, dist
 
-def sum_waves(x, y):
+def sumWavesAtPoint(x, y):
     """
     Calculates phasors for each transducer's wave, and sums them together to get the resultant wave.
     Takes into account atmospheric/geometric/beam angle attenuation.
@@ -143,16 +143,16 @@ def sum_waves(x, y):
 
     for transducer in range(len(TRANSDUCERS)):
         # Calculating phase offset of wave from a particular transducer
-        phase_offset, dist = distance_wavelengths(x, y, transducer)
+        phase_offset, dist = computeDistanceInWavelengths(x, y, transducer)
         phase_offset *= 2*pi
         phase_offset += TRANSDUCERS[transducer][3]
 
         # Calculating wave attenuation due to distance/atmospheric absorbtion
         # Then converting that to an absolute pressure amplitude
-        amplitude = _PRESS_AMPLITUDE * R0 * attenuate(dist)
+        amplitude = _PRESS_AMPLITUDE * R0 * computeDistanceAttenuation(dist)
 
         # Calculating the strength of the ultrasound beam from the transducer at this point
-        angle_attenuation = beam_angle_attenuation(x, y, transducer)
+        angle_attenuation = computeAngleAttenuation(x, y, transducer)
 
         # Calculating phasor
         complex_phase = complex(0, phase_offset)
@@ -162,11 +162,11 @@ def sum_waves(x, y):
         wave += wave_calc
 
     # Converting wave sum to dB/dBA, depending on user configuration
-    wave_scaled = log_scale(abs(wave))
+    wave_scaled = convertToDb(abs(wave))
 
     return wave_scaled
 
-def log_scale(amplitude):
+def convertToDb(amplitude):
     """
     Scales wave amplitude (in Pa) into a decibel volume reading.
     """
@@ -181,7 +181,7 @@ def log_scale(amplitude):
 
     return volume_db
 
-def attenuate(dist):
+def computeDistanceAttenuation(dist):
     """
     Calculates the wave's attenutation - both due to geometric and atmospheric attenuation.
     """
@@ -199,7 +199,7 @@ def attenuate(dist):
 
     return amplitude
 
-def generate_data_matrix_row(y):
+def generateDataRow(y):
     """
     Function to handle the generation of data for each row of the data matrix.
     """
@@ -208,13 +208,13 @@ def generate_data_matrix_row(y):
     logger("Processing row {}...".format(y))
 
     for x in range(PLOTSIZE+1):
-        wave = sum_waves(x, y)
+        wave = sumWavesAtPoint(x, y)
 
         data_row[x] = wave
 
     return data_row
 
-def matrix_min_max(data):
+def computeMatrixMinMax(data):
     """
     Finds the minimum value in a 2-dimensional list.
 
@@ -232,18 +232,20 @@ def matrix_min_max(data):
 
     return current_min, current_max
 
+def
+
 if __name__ == "__main__":
     if dBA:
         # Calculating the weighting if user wants result to be in dBA
-        _A_WEIGHT = dba_weight()
+        _A_WEIGHT = computeDBAWeight()
 
 
     y_values = list(range(PLOTSIZE+1))
     with Pool(processes=CPU_CORES) as pool:
-        data_matrix = pool.map(generate_data_matrix_row, y_values)
+        data_matrix = pool.map(generateDataRow, y_values)
 
     data_matrix = np.array(data_matrix)
-    data_min, data_max = matrix_min_max(data_matrix)
+    data_min, data_max = computeMatrixMinMax(data_matrix)
     cmap = plt.get_cmap("plasma").copy()
     cmap.set_under("lightgrey")
     plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=data_min, vmax=data_max)
