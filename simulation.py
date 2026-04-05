@@ -232,9 +232,9 @@ def computeMatrixMinMax(data):
 
     return current_min, current_max
 
-def
-
-if __name__ == "__main__":
+def runSimulation():
+    # Handles running the sound simulation (across multiple CPU cores)
+    # Returns the data array
     if dBA:
         # Calculating the weighting if user wants result to be in dBA
         _A_WEIGHT = computeDBAWeight()
@@ -245,7 +245,11 @@ if __name__ == "__main__":
         data_matrix = pool.map(generateDataRow, y_values)
 
     data_matrix = np.array(data_matrix)
-    data_min, data_max = computeMatrixMinMax(data_matrix)
+
+    return data_matrix
+
+def plotSimulation(data_matrix):
+    # Handles plotting the simulation data in matplotlib
     cmap = plt.get_cmap("plasma").copy()
     cmap.set_under("lightgrey")
     plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=data_min, vmax=data_max)
@@ -260,3 +264,7 @@ if __name__ == "__main__":
     plt.ylabel("Distance/MM")
 
     plt.show()
+
+if __name__ == "__main__":
+    data = runSimulation()
+    plotSimulation(data)
