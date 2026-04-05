@@ -84,14 +84,14 @@ def _computeAngleAttenuation(x, y, transducer_no):
     """
 
     # Beam angle attenuation approximation using a sinc function + scaling it
-    angle = computeTransducerToPointAngle(x, y, transducer_no)
+    angle = _computeTransducerToPointAngle(x, y, transducer_no)
 
     # If angle>specified cutoff, then this just assumes 0 volume from transducer
     # Useful for simulating certain setups
     if abs(angle) > MAX_BEAM_ANGLE*_DEG_TO_RAD:
         return 0
 
-    attenuation_factor = abs(sinc(angle))
+    attenuation_factor = abs(_sinc(angle))
 
     return attenuation_factor
 
@@ -119,16 +119,16 @@ def _sumWavesAtPoint(x, y):
 
     for transducer in range(len(TRANSDUCERS)):
         # Calculating phase offset of wave from a particular transducer
-        phase_offset, dist = computeDistanceInWavelengths(x, y, transducer)
+        phase_offset, dist = _computeDistanceInWavelengths(x, y, transducer)
         phase_offset *= 2*pi
         phase_offset += TRANSDUCERS[transducer][3]
 
         # Calculating wave attenuation due to distance/atmospheric absorbtion
         # Then converting that to an absolute pressure amplitude
-        amplitude = _PRESS_AMPLITUDE * R0 * computeDistanceAttenuation(dist)
+        amplitude = _PRESS_AMPLITUDE * R0 * _computeDistanceAttenuation(dist)
 
         # Calculating the strength of the ultrasound beam from the transducer at this point
-        angle_attenuation = computeAngleAttenuation(x, y, transducer)
+        angle_attenuation = _computeAngleAttenuation(x, y, transducer)
 
         # Calculating phasor
         complex_phase = complex(0, phase_offset)
@@ -138,7 +138,7 @@ def _sumWavesAtPoint(x, y):
         wave += wave_calc
 
     # Converting wave sum to dB/dBA, depending on user configuration
-    wave_scaled = convertToDb(abs(wave))
+    wave_scaled = _convertToDb(abs(wave))
 
     return wave_scaled
 
@@ -181,10 +181,10 @@ def _generateDataRow(y):
     """
 
     data_row = (PLOTSIZE+1)*[0]
-    logger("Processing row {}...".format(y))
+    _logger("Processing row {}...".format(y))
 
     for x in range(PLOTSIZE+1):
-        wave = sumWavesAtPoint(x, y)
+        wave = _sumWavesAtPoint(x, y)
 
         data_row[x] = wave
 
@@ -197,11 +197,11 @@ def runSimulation():
     """
     if dBA:
         # Calculating the weighting if user wants result to be in dBA
-        _A_WEIGHT = computeDBAWeight()
+        _A_WEIGHT = _computeDBAWeight()
 
     y_values = list(range(PLOTSIZE+1))
     with Pool(processes=CPU_CORES) as pool:
-        data_matrix = pool.map(generateDataRow, y_values)
+        data_matrix = pool.map(_generateDataRow, y_values)
 
     data_matrix_np = np.array(data_matrix)
 
