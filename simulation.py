@@ -3,9 +3,9 @@
 from math import sqrt, pi, log10, atan2, sin
 from cmath import exp
 from multiprocessing import Pool
-from SIM_CONFIG import *
 import matplotlib.pyplot as plt
 import numpy as np
+from SIM_CONFIG import *
 
 # Wavelength in MM
 _WAVELENGTH = (343/FREQUENCY)*1000
@@ -16,13 +16,13 @@ _PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
 _DEG_TO_RAD = pi/180
 _A_WEIGHT = 0
 
-def logger(string):
+def _logger(string):
     """
     Simple method to log a string to the screen.
     """
     print(string)
 
-def computeDBAWeight():
+def _computeDBAWeight():
     """
     Calculates the adjustment value to convert from decibels to A-weighted decibels.
 
@@ -38,7 +38,7 @@ def computeDBAWeight():
 
     return aweight
 
-def sinc(angle):
+def _sinc(angle):
     """
     Maths function to calculate the value of the sinc of an angle.
 
@@ -53,7 +53,7 @@ def sinc(angle):
 
     return sin(x)/x
 
-def computeTransducerToPointAngle(x, y, transducer_no):
+def _computeTransducerToPointAngle(x, y, transducer_no):
     """
     Calculates the angle between the transducer's central axis and the specified point.
 
@@ -76,7 +76,7 @@ def computeTransducerToPointAngle(x, y, transducer_no):
 
     return angle
 
-def computeAngleAttenuation(x, y, transducer_no):
+def _computeAngleAttenuation(x, y, transducer_no):
     """
     Uses the transducer's central axis -> point angle, and the sinc function.
     Determines the transducer's beam strength at the specified point.
@@ -96,7 +96,7 @@ def computeAngleAttenuation(x, y, transducer_no):
 
     return attenuation_factor
 
-def computeDistanceInWavelengths(x, y, transducer_no):
+def _computeDistanceInWavelengths(x, y, transducer_no):
     """
     Calculates the absolute distance between the transducer and specified point.
     Also calculates the distance in terms of wavelengths of sound that is being modelled.
@@ -108,7 +108,7 @@ def computeDistanceInWavelengths(x, y, transducer_no):
 
     return dist_lambdas, dist
 
-def sumWavesAtPoint(x, y):
+def _sumWavesAtPoint(x, y):
     """
     Calculates phasors for each transducer's wave, and sums them together to get the resultant wave.
     Takes into account atmospheric/geometric/beam angle attenuation.
@@ -143,7 +143,7 @@ def sumWavesAtPoint(x, y):
 
     return wave_scaled
 
-def convertToDb(amplitude):
+def _convertToDb(amplitude):
     """
     Scales wave amplitude (in Pa) into a decibel volume reading.
     """
@@ -158,7 +158,7 @@ def convertToDb(amplitude):
 
     return volume_db
 
-def computeDistanceAttenuation(dist):
+def _computeDistanceAttenuation(dist):
     """
     Calculates the wave's attenutation - both due to geometric and atmospheric attenuation.
     """
@@ -176,7 +176,7 @@ def computeDistanceAttenuation(dist):
 
     return amplitude
 
-def generateDataRow(y):
+def _generateDataRow(y):
     """
     Function to handle the generation of data for each row of the data matrix.
     """
@@ -191,24 +191,6 @@ def generateDataRow(y):
 
     return data_row
 
-def computeMatrixMinMax(data):
-    """
-    Finds the minimum value in a 2-dimensional list.
-
-    Ignores values that are 0, as they are blanked out in the heatmap
-    """
-
-    current_min = (len(TRANSDUCERS)+1)*TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL
-    current_max = 0
-    for a in range(len(data)):
-        for b in range(len(data[a])):
-            if data[a][b] < current_min and data[a][b] != 0:
-                current_min = data[a][b]
-            if data[a][b] > current_max:
-                current_max = data[a][b]
-
-    return current_min, current_max
-
 def runSimulation():
     # Handles running the sound simulation (across multiple CPU cores)
     # Returns the data array
@@ -221,29 +203,6 @@ def runSimulation():
     with Pool(processes=CPU_CORES) as pool:
         data_matrix = pool.map(generateDataRow, y_values)
 
-    data_matrix = np.array(data_matrix)
+    data_matrix_np = np.array(data_matrix)
 
-    return data_matrix
-
-def plotSimulation(data_matrix):
-    data_min, data_max = computeMatrixMinMax(data_matrix)
-
-    # Handles plotting the simulation data in matplotlib
-    cmap = plt.get_cmap("plasma").copy()
-    cmap.set_under("lightgrey")
-    plt.imshow(data_matrix, cmap=cmap, interpolation="bilinear", origin="lower", vmin=data_min, vmax=data_max)
-    plt.colorbar()
-
-    if dBA:
-        plt.title("Ultrasound Intensity (dBA) Around Transducer Array")
-    else:
-        plt.title("Ultrasound Intensity (dB) Around Transducer Array")
-
-    plt.xlabel("Distance/MM")
-    plt.ylabel("Distance/MM")
-
-    plt.show()
-
-if __name__ == "__main__":
-    data = runSimulation()
-    plotSimulation(data)
+    return data_matrix_np
