@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import matplotlib.pyplot as plt
 from simulation import runSimulation
 
 # Class to plot interactive 3D heatmaps using matplotlib
@@ -7,10 +8,15 @@ class SoundSimPlot:
     data_matrix = []
 
     def _computeData():
-        # Function to compute the data to be visualised
+        """
+        Utility function to call compution of data
+        """
         data = runSimulation()
 
     def plotSimulation2D():
+        """
+        Plots a 2-dimensional heatmap of the data using matplotlib
+        """
         _computeData()
 
         # Handles plotting the simulation data in matplotlib
@@ -28,6 +34,9 @@ class SoundSimPlot:
                 plt.ylabel("Distance/MM")
 
                 plt.show()
+
+    def plotSimulation3D():
+
 
 if __name__ == "__main__":
     plotting = SoundSimPlot()

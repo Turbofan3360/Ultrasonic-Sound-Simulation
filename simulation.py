@@ -3,7 +3,6 @@
 from math import sqrt, pi, log10, atan2, sin
 from cmath import exp
 from multiprocessing import Pool
-import matplotlib.pyplot as plt
 import numpy as np
 from SIM_CONFIG import *
 
@@ -55,7 +54,7 @@ def _sinc(angle):
 
 def _computeTransducerToPointAngle(x, y, transducer_no):
     """
-    Calculates the angle between the transducer's central axis and the specified point.
+    Calculates the angle between the transducer's central axis and specified point.
 
     Transducer's central axis defined in the TRANSDUCERS list.
     """
@@ -65,7 +64,7 @@ def _computeTransducerToPointAngle(x, y, transducer_no):
 
     angle_point = atan2(dy, dx)
 
-    # Calculating the angle delta between the transducer's direction and the point (in radians)
+    # Calculating angle delta between the transducer's direction and point
     angle = angle_point - (TRANSDUCERS[transducer_no][2]*_DEG_TO_RAD)
 
     # Constraining "angle" in range -pi -> +pi
@@ -78,16 +77,16 @@ def _computeTransducerToPointAngle(x, y, transducer_no):
 
 def _computeAngleAttenuation(x, y, transducer_no):
     """
-    Uses the transducer's central axis -> point angle, and the sinc function.
-    Determines the transducer's beam strength at the specified point.
+    Uses the transducer's central axis -> point angle, and the sinc function
+    Determines the transducer's beam strength at the specified point
 
-    If the central axis -> point angle is larger than the cutoff, 0 is returned.
+    If the central axis -> point angle is larger than the cutoff, 0 is returned
     """
 
-    # This is a beam angle attenuation approximation using a sinc() function, and scaling it
+    # Beam angle attenuation approximation using a sinc function + scaling it
     angle = computeTransducerToPointAngle(x, y, transducer_no)
 
-    # If angle > specified cutoff, then this just assumes 0 volume from transducer
+    # If angle>specified cutoff, then this just assumes 0 volume from transducer
     # Useful for simulating certain setups
     if abs(angle) > MAX_BEAM_ANGLE*_DEG_TO_RAD:
         return 0
@@ -98,8 +97,8 @@ def _computeAngleAttenuation(x, y, transducer_no):
 
 def _computeDistanceInWavelengths(x, y, transducer_no):
     """
-    Calculates the absolute distance between the transducer and specified point.
-    Also calculates the distance in terms of wavelengths of sound that is being modelled.
+    Calculates the absolute distance between the transducer and specified point
+    Also calculates the distance in wavelengths of sound that is being modelled
     """
 
     dist_sq = (x - TRANSDUCERS[transducer_no][0])**2 + (y - TRANSDUCERS[transducer_no][1])**2
@@ -110,7 +109,7 @@ def _computeDistanceInWavelengths(x, y, transducer_no):
 
 def _sumWavesAtPoint(x, y):
     """
-    Calculates phasors for each transducer's wave, and sums them together to get the resultant wave.
+    Calculates phasors for each transducer's wave, sums them together to get the resultant wave.
     Takes into account atmospheric/geometric/beam angle attenuation.
 
     Output is in decibels/A-weighted decibels, depending on user configuration.
@@ -192,12 +191,13 @@ def _generateDataRow(y):
     return data_row
 
 def runSimulation():
-    # Handles running the sound simulation (across multiple CPU cores)
-    # Returns the data array
+    """
+    Handles running the sound simulation (across multiple CPU cores)
+    Returns the data as a numpy matrix array
+    """
     if dBA:
         # Calculating the weighting if user wants result to be in dBA
         _A_WEIGHT = computeDBAWeight()
-
 
     y_values = list(range(PLOTSIZE+1))
     with Pool(processes=CPU_CORES) as pool:
