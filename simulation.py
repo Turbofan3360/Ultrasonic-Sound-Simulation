@@ -69,8 +69,16 @@ def _computeAttenuationFactor(dist_matrix):
 
     # Calculating attenuation of sound due to distance
     # Guards against zero division error
-    attenuated = np.where(dist_matrix == 0, 0, dist_matrix)
-    attenuated = np.divide(atmospheric_attenuation, dist_matrix)
+    safe_distances = np.where(
+        dist_matrix == 0,
+        1,
+        dist_matrix
+    )
+    attenuated = np.where(
+        dist_matrix == 0,
+        0,
+        np.divide(atmospheric_attenuation, safe_distances)
+    )
 
     return attenuated
 
@@ -101,8 +109,9 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     # Calculating the cosine of the angles as a matrix
     angles_cosine = np.divide(dot_product_matrix, axis_vec_length)
     # Guarding against zero-division errors
-    distances = np.where(distances == 0, 1, distances)
-    angles_cosine = np.where(distances == 0, 1, np.divide(angles_cosine, distances))
+    # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
+    safe_distances = np.where(distances == 0, 1, distances)
+    angles_cosine = np.divide(angles_cosine, safe_distances)
     # Keeping cosine values in range
     angles_cosine = np.clip(angles_cosine, -1, 1)
 
@@ -166,11 +175,21 @@ def runVectorisedSimulation2D():
     sim_matrix = np.sum(results, axis=0)
     sim_matrix = np.abs(sim_matrix)
 
-    # Computing the volume in dB from the amplitude matrix
-    sim_matrix_db = np.where(
+    # Producing a safe matrix to then logarithmically scale to dB
+    sim_matrix_safe = np.where(
         sim_matrix == 0,
+        0.00002,
+        sim_matrix
+    )
+
+    # Computing the volume in dB from the amplitude matrix
+    sim_matrix_db = 20*np.log10(sim_matrix_safe/0.00002) + dba_weight
+
+    # Removing sub-zero values
+    sim_matrix_db = np.where(
+        sim_matrix_db < 0,
         0,
-        20*np.log10(sim_matrix/0.00002) + dba_weight
+        sim_matrix_db
     )
 
     return sim_matrix_db
