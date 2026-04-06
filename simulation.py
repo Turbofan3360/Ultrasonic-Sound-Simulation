@@ -225,7 +225,7 @@ def _computeBeamAngleFactors(angles_matrix):
     sinc_args = np.multiply(angles_matrix, np.pi*SINC_SCALEFACTOR)
     # Keeping values in range for sinc() function
     sinc_args = np.clip(sinc_args, -1, 1)
-    sinc_args = np.where(sin_args == 0, 1)
+    sinc_args = np.where(sinc_args == 0, 1, sinc_args)
 
     # Applying the scaled sinc function to each of the points in the matrix
     beam_angle_scalars = np.where(
@@ -286,7 +286,7 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     angles_cosine = np.clip(angles_cosine, -1, 1)
 
     # Calculating the angles as a matrix
-    angles = np.acos(angles_cosine)
+    angles = np.arccos(angles_cosine)
 
     return distances, angles
 
@@ -302,14 +302,11 @@ def _generateTransducerMatrix(transducer_no):
 
     # Computing all required bits to determine sound wave amplitude at each point in the grid
     # Then applying these to the amplitude matrix
-    dist_matrix, angle_matrix = _computeTransducerDistances(
+    dist_matrix, angle_matrix = _computeTransducerDistancesAngles(
         _TRANSDUCER_POS_VECTORS[transducer_no],
         _TRANSDUCER_AXIS_VECTORS[transducer_no]
     )
-    attenuation_factors = _computeAttenuationFactor(
-        amplitude_matrix,
-        dist_matrix
-    )
+    attenuation_factors = _computeAttenuationFactor(dist_matrix)
     beam_angle_factors = _computeBeamAngleFactors(angle_matrix)
 
     amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
@@ -335,11 +332,15 @@ def runVectorisedSimulation2D():
     For each transducer, a matrix is computed with the volume levels at each
     point in the simulation grid, and these matrices are then added together.
     """
-    data_matrix = np.full(
-        (PLOTSIZE+1, PLOTSIZE+1),
-        0
-    )
     transducer_indexes = list(range(len(TRANSDUCERS)))
 
     with Pool(processes=CPU_CORES) as pool:
-        data_matrix += pool.map(_generateTransducerMatrix, transducer_indexes)
+        results = pool.map(_generateTransducerMatrix, transducer_indexes)
+
+    # Summing all my results matrices
+    sim_matrix = np.sum(results, axis=0)
+
+    # Computing the volume in dB from the amplitude matrix
+    sim_matrix_db = np.where(sim_matrix == 0, 0, 20*np.log10(sim_matrix/0.00002) + _A_WEIGHT)
+
+    return sim_matrix_db
