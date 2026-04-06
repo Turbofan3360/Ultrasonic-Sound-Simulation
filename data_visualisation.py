@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
-from simulation import runSimulation2D, runVectorisedSimulation2D
+from simulation import runVectorisedSimulation2D
 from SIM_CONFIG import *
 
 # Class to plot interactive 3D heatmaps using matplotlib
