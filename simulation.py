@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from math import sqrt, pi, log10, atan2, sin
+from math import sqrt, pi, log10, sin, acos
 from cmath import exp
 from multiprocessing import Pool
 import numpy as np
@@ -14,6 +14,7 @@ _ATTENUATION_CONSTANT = (2*1.85e-5*(2*pi*FREQUENCY)**2)/(3*1.225*(343**3))
 _PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
 _DEG_TO_RAD = pi/180
 _TRANSDUCER_POS_VECTORS = [np.array(i[0]) for i in TRANSDUCERS]
+_TRANSDUCER_AXIS_VECTORS = [np.array(i[1]) for i in TRANSDUCERS]
 
 def _logger(string):
     """
@@ -53,19 +54,36 @@ def _sinc(angle):
 
     return sin(x)/x
 
+def _clampCosine(val):
+    """
+    Clamps a value to between -1 and 1
+    """
+    if val > 1:
+        return 1
+    if val < -1:
+        return -1
+    return val
+
 def _computeTransducerToPointAngle(x, y, transducer_no):
     """
     Calculates the angle between the transducer's central axis and specified point.
 
     Transducer's central axis defined in the TRANSDUCERS list.
     """
-    dx = x - _TRANSDUCER_POS_VECTORS[transducer_no][0]
-    dy = y - _TRANSDUCER_POS_VECTORS[transducer_no][1]
+    point_vec = np.array([x, y])
+    transducer_to_point = np.subtract(point_vec, _TRANSDUCER_POS_VECTORS[transducer_no])
 
-    angle_point = atan2(dy, dx)
+    transducer_point_mag = np.linalg.norm(transducer_to_point)
 
-    # Calculating angle delta between the transducer's direction and point
-    angle = angle_point - (TRANSDUCERS[transducer_no][1]*_DEG_TO_RAD)
+    if transducer_point_mag == 0:
+        return 0
+
+    # Computing angle between the two vectors using dot product formula
+    dot_product = np.dot(transducer_to_point, _TRANSDUCER_AXIS_VECTORS[transducer_no])
+    angle_cos = dot_product / (transducer_point_mag * np.linalg.norm(_TRANSDUCER_AXIS_VECTORS[transducer_no]))
+
+    angle_cos = _clampCosine(angle_cos)
+    angle = acos(angle_cos)
 
     # Constraining "angle" in range -pi -> +pi
     if angle > pi:

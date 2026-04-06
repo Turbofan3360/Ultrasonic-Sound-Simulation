@@ -18,9 +18,9 @@ SINC_SCALEFACTOR = 1.15
 # Boolean to determine whether you want the output as dBA (True) or dB (False)
 dBA = True
 
-# Transducer data formatted as [x-y position vector], angle (degrees), phase offset (radians)]
+# Transducer data formatted as [x-y position vector], [x-y transducer axis vector], phase offset (radians)]
 TRANSDUCERS = [
-    [[150, 50], 90, 0],
-    [[250, 50], 90, 0],
-    [[350, 50], 90, 0]
+    [[150, 50], [0, 1], 0],
+    [[250, 50], [0, 1], 0],
+    [[350, 50], [0, 1], 0]
 ]
