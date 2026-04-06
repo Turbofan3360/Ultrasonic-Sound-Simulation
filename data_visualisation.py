@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
-from simulation import runSimulation
+from simulation import runSimulation2D
 from SIM_CONFIG import *
 
 # Class to plot interactive 3D heatmaps using matplotlib
 class SoundSimPlot:
     data_matrix = []
-
-    def _computeData(self):
-        """
-        Utility function to call compution of data
-        """
-        self.data_matrix = runSimulation()
 
     def _computeMatrixNonZeroMin(self, data):
         """
@@ -33,7 +27,7 @@ class SoundSimPlot:
         """
         Plots a 2-dimensional heatmap of the data using matplotlib
         """
-        self._computeData()
+        self.data_matrix = runSimulation2D()
 
         # Handles plotting the simulation data in matplotlib
         cmap = plt.get_cmap("plasma").copy()
