@@ -216,3 +216,79 @@ def runSimulation2D():
     data_matrix_np = np.array(data_matrix)
 
     return data_matrix_np
+
+def _computeBeamAngleFactors():
+    """
+    Computes scalars for every point in the grid to apply the transducer's beam angle profile
+    """
+    # First need to compute angles between transducer axis and each point
+    pass
+
+def _computeAttenuationFactor(dist_matrix):
+    """
+    Calculates and applies attenuation to the amplitude matrix
+    Takes into account distance/atmospheric attenuation as well as due to the transducer beam profile
+    """
+    # Converting from mm to m, can be adapted depending on desired sim resolution
+    dist_matrix = np.divide(dist_matrix, 1000)
+
+    # Calculating atmospheric attenuation of sound
+    atmospheric_attenuation = np.multiply(dist_matrix, -_ATTENUATION_CONSTANT)
+    atmospheric_attenuation = np.exp(atmospheric_attenuation)
+
+    # Calculating attenuation of sound due to distance
+    # Guards against zero division error
+    attenuated = np.where(dist_matrix == 0, 0, np.divide(atmospheric_attenuation, dist_matrix))
+
+    return attenuated
+
+def _computeTransducerDistances(transducer_pos):
+    """
+    Computes a matrix of the distances between the transducer and each point in the grid
+    """
+    transducer_x, transducer_y = transducer_pos
+
+    # Shaping my x/y values into matrices of the right shape
+    x_vals = np.array(range(PLOTSIZE+1)).reshape(PLOTSIZE+1, 1)
+    y_vals = np.array(range(PLOTSIZE+1)).reshape(1, PLOTSIZE+1)
+
+    # Calculating the x/y deltas between the transducer position and each point in the grid
+    delta_x_vals = x_vals - transducer_x
+    delta_y_vals = y_vals - transducer_y
+
+    # Combining to calculate distances
+    distance_sq = np.square(delta_x_vals) + np.square(delta_y_vals)
+    distances = np.sqrt(distance_sq)
+
+    return distances
+
+def _generateTransducerMatrix(transducer_no):
+    """
+    Generates a matrix showing the volumes produced due to the single transducer at each point in the grid
+    """
+    # Creating an initial uniform sound amplitude matrix
+    amplitude_matrix = np.full(
+        (PLOTSIZE+1, PLOTSIZE+1),
+        _PRESS_AMPLITUDE * R0
+    )
+
+    # Computing all required bits to determine sound wave amplitude at each point in the grid
+    dist_matrix = _computeTransducerDistances(_TRANSDUCER_POS_VECTORS[transducer_no])
+    attenuation_factors = _computeAttenuationFactor(amplitude_matrix, dist_matrix)
+    beam_angle_factors = _computeBeamAngleFactors()
+
+    amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
+    amplitude_matrix = np.multiply(amplitude_matrix, beam_angle_factors)
+
+    # Computing complex phasors to represet the wave at each point in the grid
+
+    # Computing final wave value at each point in the grid
+
+def runVectorisedSimulation2D():
+    """
+    Runs the simulation as a fully vectorised operation.
+
+    For each transducer, a matrix is computed with the volume levels at each
+    point in the simulation grid, and these matrices are then added together.
+    """
+    pass
