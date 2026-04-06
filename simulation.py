@@ -217,12 +217,24 @@ def runSimulation2D():
 
     return data_matrix_np
 
-def _computeBeamAngleFactors():
+def _computeBeamAngleFactors(angles_matrix):
     """
     Computes scalars for every point in the grid to apply the transducer's beam angle profile
+    Currently uses a sinc function approximation, this can be changed
     """
-    # First need to compute angles between transducer axis and each point
-    pass
+    sinc_args = np.multiply(angles_matrix, np.pi*SINC_SCALEFACTOR)
+    # Keeping values in range for sinc() function
+    sinc_args = np.clip(sinc_args, -1, 1)
+    sinc_args = np.where(sin_args == 0, 1)
+
+    # Applying the scaled sinc function to each of the points in the matrix
+    beam_angle_scalars = np.where(
+        MAX_BEAM_ANGLE*_DEG_TO_RAD,
+        0,
+        np.abs(np.sin(sinc_args) / sinc_args)
+    )
+
+    return beam_angle_scalars
 
 def _computeAttenuationFactor(dist_matrix):
     """
@@ -242,9 +254,10 @@ def _computeAttenuationFactor(dist_matrix):
 
     return attenuated
 
-def _computeTransducerDistances(transducer_pos):
+def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     """
     Computes a matrix of the distances between the transducer and each point in the grid
+    Computes a matrix of the angles between the transducer central axis and each point in the grid
     """
     transducer_x, transducer_y = transducer_pos
 
@@ -260,7 +273,22 @@ def _computeTransducerDistances(transducer_pos):
     distance_sq = np.square(delta_x_vals) + np.square(delta_y_vals)
     distances = np.sqrt(distance_sq)
 
-    return distances
+    # Calculating dot product matrix
+    dot_product_matrix = delta_x_vals*transducer_axis[0] + delta_y_vals*transducer_axis[1]
+
+    axis_vec_length = np.linalg.norm(transducer_axis)
+
+    # Calculating the cosine of the angles as a matrix
+    angles_cosine = np.divide(dot_product_matrix, axis_vec_length)
+    # Guarding against zero-division errors
+    angles_cosine = np.where(distances == 0, 1, np.divide(angles_cosine, distances))
+    # Keeping cosine values in range
+    angles_cosine = np.clip(angles_cosine, -1, 1)
+
+    # Calculating the angles as a matrix
+    angles = np.acos(angles_cosine)
+
+    return distances, angles
 
 def _generateTransducerMatrix(transducer_no):
     """
@@ -273,16 +301,32 @@ def _generateTransducerMatrix(transducer_no):
     )
 
     # Computing all required bits to determine sound wave amplitude at each point in the grid
-    dist_matrix = _computeTransducerDistances(_TRANSDUCER_POS_VECTORS[transducer_no])
-    attenuation_factors = _computeAttenuationFactor(amplitude_matrix, dist_matrix)
-    beam_angle_factors = _computeBeamAngleFactors()
+    # Then applying these to the amplitude matrix
+    dist_matrix, angle_matrix = _computeTransducerDistances(
+        _TRANSDUCER_POS_VECTORS[transducer_no],
+        _TRANSDUCER_AXIS_VECTORS[transducer_no]
+    )
+    attenuation_factors = _computeAttenuationFactor(
+        amplitude_matrix,
+        dist_matrix
+    )
+    beam_angle_factors = _computeBeamAngleFactors(angle_matrix)
 
     amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
     amplitude_matrix = np.multiply(amplitude_matrix, beam_angle_factors)
 
-    # Computing complex phasors to represet the wave at each point in the grid
+    # Computing phase offset in radians at each point in the grid
+    dist_matrix_wavelength = np.divide(dist_matrix, _WAVELENGTH)
+    dist_matrix_wavelength = np.multiply(dist_matrix_wavelength, 2*np.pi)
 
-    # Computing final wave value at each point in the grid
+    # Using those to calculate (absolute) amplitude scalars
+    wave_phase_cosine = np.cos(dist_matrix_wavelength)
+    wave_phase_cosine = np.abs(wave_phase_cosine)
+
+    # Applying wave phase scalars to the wave amplitude at each point in the grid
+    amplitude_matrix = np.multiply(amplitude_matrix, wave_phase_cosine)
+
+    return amplitude_matrix
 
 def runVectorisedSimulation2D():
     """
@@ -291,4 +335,11 @@ def runVectorisedSimulation2D():
     For each transducer, a matrix is computed with the volume levels at each
     point in the simulation grid, and these matrices are then added together.
     """
-    pass
+    data_matrix = np.full(
+        (PLOTSIZE+1, PLOTSIZE+1),
+        0
+    )
+    transducer_indexes = list(range(len(TRANSDUCERS)))
+
+    with Pool(processes=CPU_CORES) as pool:
+        data_matrix += pool.map(_generateTransducerMatrix, transducer_indexes)
