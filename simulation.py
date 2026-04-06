@@ -223,13 +223,13 @@ def _computeBeamAngleFactors(angles_matrix):
     Currently uses a sinc function approximation, this can be changed
     """
     sinc_args = np.multiply(angles_matrix, np.pi*SINC_SCALEFACTOR)
+
     # Keeping values in range for sinc() function
-    sinc_args = np.clip(sinc_args, -1, 1)
     sinc_args = np.where(sinc_args == 0, 1, sinc_args)
 
     # Applying the scaled sinc function to each of the points in the matrix
     beam_angle_scalars = np.where(
-        MAX_BEAM_ANGLE*_DEG_TO_RAD,
+        np.abs(angles_matrix) > MAX_BEAM_ANGLE*_DEG_TO_RAD,
         0,
         np.abs(np.sin(sinc_args) / sinc_args)
     )
@@ -250,7 +250,8 @@ def _computeAttenuationFactor(dist_matrix):
 
     # Calculating attenuation of sound due to distance
     # Guards against zero division error
-    attenuated = np.where(dist_matrix == 0, 0, np.divide(atmospheric_attenuation, dist_matrix))
+    attenuated = np.where(dist_matrix == 0, 0, dist_matrix)
+    attenuated = np.divide(atmospheric_attenuation, dist_matrix)
 
     return attenuated
 
@@ -262,8 +263,8 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     transducer_x, transducer_y = transducer_pos
 
     # Shaping my x/y values into matrices of the right shape
-    x_vals = np.array(range(PLOTSIZE+1)).reshape(PLOTSIZE+1, 1)
-    y_vals = np.array(range(PLOTSIZE+1)).reshape(1, PLOTSIZE+1)
+    x_vals = np.array(range(PLOTSIZE+1)).reshape(1, PLOTSIZE+1)
+    y_vals = np.array(range(PLOTSIZE+1)).reshape(PLOTSIZE+1, 1)
 
     # Calculating the x/y deltas between the transducer position and each point in the grid
     delta_x_vals = x_vals - transducer_x
@@ -281,6 +282,7 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     # Calculating the cosine of the angles as a matrix
     angles_cosine = np.divide(dot_product_matrix, axis_vec_length)
     # Guarding against zero-division errors
+    distances = np.where(distances == 0, 1, distances)
     angles_cosine = np.where(distances == 0, 1, np.divide(angles_cosine, distances))
     # Keeping cosine values in range
     angles_cosine = np.clip(angles_cosine, -1, 1)
@@ -315,10 +317,11 @@ def _generateTransducerMatrix(transducer_no):
     # Computing phase offset in radians at each point in the grid
     dist_matrix_wavelength = np.divide(dist_matrix, _WAVELENGTH)
     dist_matrix_wavelength = np.multiply(dist_matrix_wavelength, 2*np.pi)
+    # Adding on transducer phase offset
+    dist_matrix_wavelength = np.add(dist_matrix_wavelength, TRANSDUCERS[transducer_no][2])
 
     # Using those to calculate (absolute) amplitude scalars
     wave_phase_cosine = np.cos(dist_matrix_wavelength)
-    wave_phase_cosine = np.abs(wave_phase_cosine)
 
     # Applying wave phase scalars to the wave amplitude at each point in the grid
     amplitude_matrix = np.multiply(amplitude_matrix, wave_phase_cosine)
@@ -339,8 +342,13 @@ def runVectorisedSimulation2D():
 
     # Summing all my results matrices
     sim_matrix = np.sum(results, axis=0)
+    sim_matrix = np.abs(sim_matrix)
 
     # Computing the volume in dB from the amplitude matrix
-    sim_matrix_db = np.where(sim_matrix == 0, 0, 20*np.log10(sim_matrix/0.00002) + _A_WEIGHT)
+    sim_matrix_db = np.where(
+        sim_matrix == 0,
+        0,
+        20*np.log10(sim_matrix/0.00002) + _A_WEIGHT
+    )
 
     return sim_matrix_db
