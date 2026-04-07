@@ -5,7 +5,7 @@ import numpy as np
 
 # Distance around the ultrasonic array that you're modelling (in millimeters)
 PLOTSIZE = 500
-# Number of CPU cores you want to use to run the simulation
+# Max. number of CPU cores to be used in running the simulation
 CPU_CORES = 6
 # Simulated sound frequency in Hz
 FREQUENCY = 25000
@@ -15,8 +15,7 @@ TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL = 120
 R0 = 0.3
 # Boolean to determine whether you want the output as dBA (True) or dB (False)
 dBA = True
-
-# Transducer data formatted as [x-y position vector], [x-y transducer axis vector], phase offset (radians)]
+# Transducer data formatted as [x-y position vector], [x-y transducer central axis vector], phase offset (radians)]
 TRANSDUCERS = [
     [[150, 50], [0, 1], 0],
     [[250, 50], [0, 1], 0],
@@ -32,7 +31,9 @@ def userComputeBeamAngleResponse(angles_matrix):
     """
     Computes scalars for every point in the grid to apply the transducer's beam angle profile
     User-definable - all operations here should be NumPy matrix operations
-    Parameter angles_matrix is a matrix of the angle of each point in the plot from the transducer (in radians)
+
+    The angles_matrix parameter is a matrix of the angle of each point in the
+    plot from the transducer's central axis (in radians)
 
     Currently applies a sinc() approximation of a beam angle profile, with a cutoff angle
     """
