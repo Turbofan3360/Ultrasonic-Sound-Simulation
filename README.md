@@ -8,8 +8,6 @@ I wanted to write a simulation which could replicate the simulation results achi
 
 _More details about their project and simulation in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
-![Example image - 9 transducers, planar arrangment, no phase offsets](images/1_signal_9_transducers_planar.png)
-
 ### The Code: ###
 
 This simulation is a fully vectorised (using NumPy) computation that computes a matrix of the wave from each transducer across the grid. These matrices are then summed together, before the resulting wave magnitude at each point is taken to determine the final simulation result. Results are log-scaled that to a decibel result - either dB or dBA, depending on the your preference.
@@ -17,6 +15,9 @@ This simulation is a fully vectorised (using NumPy) computation that computes a 
 The computation of the wave matrix from each transducer is run in parallel - one CPU core per transducer.
 
 Any ideas to improve the simulation quality are welcome!
+
+Example Simulation:
+![Example image - 9 transducers, planar arrangment, no phase offsets](images/1_signal_9_transducers_planar.png)
 
 ### Simulation Configuration: ###
 
