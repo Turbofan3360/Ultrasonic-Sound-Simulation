@@ -16,8 +16,7 @@ The computation of the wave matrix from each transducer is run in parallel - one
 
 Any ideas to improve the simulation quality are welcome!
 
-Example Simulation:
-![Example image - 9 transducers, planar arrangment, no phase offsets](images/1_signal_9_transducers_planar.png)
+![Example image - 9 transducers, planar arrangment, no phase offsets](img/1_signal_9_transducers_planar.png)
 
 ### Simulation Configuration: ###
 
