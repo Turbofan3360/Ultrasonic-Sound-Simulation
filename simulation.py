@@ -11,7 +11,6 @@ _WAVELENGTH = (343/FREQUENCY)*1000
 _ATTENUATION_CONSTANT = (2*1.85e-5*(2*np.pi*FREQUENCY)**2)/(3*1.225*(343**3))
 # Used for calculating absolute volume of ultrasound at every point
 _PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
-_DEG_TO_RAD = np.pi/180
 _TRANSDUCER_POS_VECTORS = [np.array(i[0]) for i in TRANSDUCERS]
 _TRANSDUCER_AXIS_VECTORS = [np.array(i[1]) for i in TRANSDUCERS]
 
@@ -35,25 +34,6 @@ def _computeDBAWeight():
     aweight = 20*np.log10(ra)+2
 
     return aweight
-
-def _computeBeamAngleFactors(angles_matrix):
-    """
-    Computes scalars for every point in the grid to apply the transducer's beam angle profile
-    Currently uses a sinc function approximation, this can be changed
-    """
-    sinc_args = np.multiply(angles_matrix, np.pi*SINC_SCALEFACTOR)
-
-    # Keeping values in range for sinc() function
-    sinc_args = np.where(sinc_args == 0, 1, sinc_args)
-
-    # Applying the scaled sinc function to each of the points in the matrix
-    beam_angle_scalars = np.where(
-        np.abs(angles_matrix) > MAX_BEAM_ANGLE*_DEG_TO_RAD,
-        0,
-        np.abs(np.sin(sinc_args) / sinc_args)
-    )
-
-    return beam_angle_scalars
 
 def _computeAttenuationFactor(dist_matrix):
     """
@@ -137,7 +117,7 @@ def _generateTransducerMatrix(transducer_no):
         _TRANSDUCER_AXIS_VECTORS[transducer_no]
     )
     attenuation_factors = _computeAttenuationFactor(dist_matrix)
-    beam_angle_factors = _computeBeamAngleFactors(angle_matrix)
+    beam_angle_factors = userComputeBeamAngleResponse(angle_matrix)
 
     amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
     amplitude_matrix = np.multiply(amplitude_matrix, beam_angle_factors)

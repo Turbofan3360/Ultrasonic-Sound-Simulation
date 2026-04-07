@@ -1,6 +1,8 @@
 ### ALL THE CONFIGURABLE VARIABLES IN THE SIMULATION ARE HERE ###
 ### Configure these variables to set up your simulation ###
 
+import numpy as np
+
 # Distance around the ultrasonic array that you're modelling (in millimeters)
 PLOTSIZE = 500
 # Number of CPU cores you want to use to run the simulation
@@ -11,10 +13,6 @@ FREQUENCY = 25000
 TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL = 120
 # The distance at which transducer's transmitting sound pressure level is measured, in M
 R0 = 0.3
-# In degrees - the angle from the transducer's axis to the edge of its beam
-MAX_BEAM_ANGLE = 100
-# Scale factor to make the sinc function behave as wanted for beam angle attenuation
-SINC_SCALEFACTOR = 1.15
 # Boolean to determine whether you want the output as dBA (True) or dB (False)
 dBA = True
 
@@ -24,3 +22,30 @@ TRANSDUCERS = [
     [[250, 50], [0, 1], 0],
     [[350, 50], [0, 1], 0]
 ]
+
+# Scale factor to make the sinc function behave as wanted for beam angle attenuation
+SINC_SCALEFACTOR = 1.15
+# In radians - the angle from the transducer's axis to the edge of its beam
+MAX_BEAM_ANGLE = 100*(np.pi/180)
+
+def userComputeBeamAngleResponse(angles_matrix):
+    """
+    Computes scalars for every point in the grid to apply the transducer's beam angle profile
+    User-definable - all operations here should be NumPy matrix operations
+    Parameter angles_matrix is a matrix of the angle of each point in the plot from the transducer (in radians)
+
+    Currently applies a sinc() approximation of a beam angle profile, with a cutoff angle
+    """
+    sinc_args = np.multiply(angles_matrix, np.pi*SINC_SCALEFACTOR)
+
+    # Keeping values in range for sinc() function
+    sinc_args = np.where(sinc_args == 0, 1, sinc_args)
+
+    # Applying the scaled sinc function to each of the points in the matrix
+    beam_angle_scalars = np.where(
+        np.abs(angles_matrix) > MAX_BEAM_ANGLE,
+        0,
+        np.abs(np.sin(sinc_args) / sinc_args)
+    )
+
+    return beam_angle_scalars
