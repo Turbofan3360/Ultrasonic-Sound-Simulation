@@ -123,16 +123,16 @@ def _generateTransducerMatrix(transducer_no):
     amplitude_matrix = np.multiply(amplitude_matrix, beam_angle_factors)
 
     # Computing phase offset in radians at each point in the grid
-    dist_matrix_wavelength = np.divide(dist_matrix, _WAVELENGTH)
-    dist_matrix_wavelength = np.multiply(dist_matrix_wavelength, 2*np.pi)
+    phase_offsets = np.divide(dist_matrix, _WAVELENGTH)
+    phase_offsets = np.multiply(phase_offsets, 2*np.pi)
     # Adding on transducer phase offset
-    dist_matrix_wavelength = np.add(dist_matrix_wavelength, TRANSDUCERS[transducer_no][2])
+    phase_offsets = np.add(phase_offsets, TRANSDUCERS[transducer_no][2])
 
-    # Using those to calculate (absolute) amplitude scalars
-    wave_phase_cosine = np.cos(dist_matrix_wavelength)
+    # Using those to calculate wave phasors
+    complex_wave_amplitudes = np.exp(1j*phase_offsets)
 
-    # Applying wave phase scalars to the wave amplitude at each point in the grid
-    amplitude_matrix = np.multiply(amplitude_matrix, wave_phase_cosine)
+    # Applying wave amplitude (magnitude) to the wave phasor representation
+    amplitude_matrix = np.multiply(amplitude_matrix, complex_wave_amplitudes)
 
     return amplitude_matrix
 
