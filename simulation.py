@@ -145,7 +145,10 @@ def runVectorisedSimulation2D():
     transducer_indexes = list(range(len(TRANSDUCERS)))
 
     # If user wants results in dBA, need to compute the weighting for it
-    dba_weight = _computeDBAWeight()
+    if dBA:
+        dba_weight = _computeDBAWeight()
+    else:
+        dba_weight = 0
 
     with Pool(processes=CPU_CORES) as pool:
         results = pool.map(_generateTransducerMatrix, transducer_indexes)
