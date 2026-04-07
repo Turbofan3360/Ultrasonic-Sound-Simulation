@@ -2,9 +2,9 @@
 
 ### The Idea: ###
 
-This is based on a project from the University of Chicago's SAND Lab (Project page: <https://sandlab.cs.uchicago.edu/jammer/>). The aim of the project was to create a wearable jammer that uses ultrasonic sound to jam many common microphones (e.g. used in Alexa/Google Home voice assistants, mobile phones, e.t.c.).
+This started with a paper from the University of Chicago's SAND Lab: <https://sandlab.cs.uchicago.edu/jammer/>. The aim of their project was to create a wearable jammer that uses ultrasonic sound to jam many common microphones such as those used in Alexa or Google Home smart assistants.
 
-I wanted to write a simulation which could replicate the simulation results achieved in their paper.
+I wanted to write a simulation which could replicate the simulation results achieved in their paper, as well as potentially be used for other ultrasound simulation tasks.
 
 _More details about their project and simulation in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
