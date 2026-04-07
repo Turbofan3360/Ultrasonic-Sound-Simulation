@@ -46,8 +46,9 @@ class SoundSimPlot:
         else:
             plt.title("Ultrasound Intensity (dB) Around Transducer Array")
 
-            plt.xlabel("Distance/MM")
-            plt.ylabel("Distance/MM")
+        plt.xlabel("Distance/MM")
+        plt.ylabel("Distance/MM")
+        plt.gcf().canvas.manager.set_window_title("Sound Simulation")
 
         plt.show()
 
