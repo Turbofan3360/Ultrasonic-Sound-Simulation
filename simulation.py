@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from cmath import exp
 from multiprocessing import Pool
 import numpy as np
 from SIM_CONFIG import *
