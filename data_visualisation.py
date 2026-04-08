@@ -81,17 +81,17 @@ class SoundSimPlot:
         self.data_matrix = np.load("sim_data.npy")
 
         # Creates a figure to plot on
-        fig = plt.figure(figsize=(15, 5))
+        fig = plt.figure(figsize=(16, 5))
         fig.canvas.manager.set_window_title("Sound Simulation")
 
-        # Creates axes to put my plots and sliders on
+        # Creates axes to put my plots, sliders, and colourbar on
         ax1 = fig.add_axes([0.065, 0.15, 0.25, 0.75])
         ax2 = fig.add_axes([0.385, 0.15, 0.25, 0.75])
         ax3 = fig.add_axes([0.70, 0.15, 0.25, 0.75])
 
-        sl_ax1 = fig.add_axes([0.015, 0.15, 0.01, 0.7])
-        sl_ax2 = fig.add_axes([0.330, 0.15, 0.01, 0.7])
-        sl_ax3 = fig.add_axes([0.650, 0.15, 0.01, 0.7])
+        sl_ax1 = fig.add_axes([0.02, 0.15, 0.01, 0.75])
+        sl_ax2 = fig.add_axes([0.34, 0.15, 0.01, 0.75])
+        sl_ax3 = fig.add_axes([0.655, 0.15, 0.01, 0.75])
 
         cbar_ax = fig.add_axes([0.96, 0.15, 0.01, 0.75])
 
