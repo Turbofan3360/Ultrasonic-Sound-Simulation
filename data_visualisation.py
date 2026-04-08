@@ -78,7 +78,7 @@ class SoundSimPlot:
         Plots a 3-dimensional heatmap of the data
         Plus sliders to let you slice through cross-sections of the data
         """
-        self.data_matrix = runVectorisedSimulation3D())
+        self.data_matrix = runVectorisedSimulation3D()
 
         # Creates a figure to plot on
         fig = plt.figure(figsize=(16, 5))

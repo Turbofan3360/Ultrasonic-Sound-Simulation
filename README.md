@@ -14,7 +14,7 @@ This simulation is a fully vectorised (using NumPy) computation that computes a 
 
 The computation of the wave matrix from each transducer can be run in parallel - one CPU core per transducer.
 
-This simulation can be run in 3D as well - this requires significant amounts of memory to run. Currently only one visualisation of this data is available, which enables you to slice through the 3D space in the XY, XZ, and YZ planes. I intend to add more visualisations of this in future. 
+This simulation can be run in 3D as well - this requires significant amounts of memory to run (I will work to bring this down in future). Currently only one visualisation of this data is available, which enables you to slice through the 3D space in the XY, XZ, and YZ planes. I intend to add more visualisations of this in future. 
 
 Any ideas to improve the simulation quality are welcome!
 
