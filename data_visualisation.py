@@ -104,7 +104,6 @@ class SoundSimPlot:
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=0.1,
             vmax=self.data_matrix.max()
         )
 
@@ -126,7 +125,6 @@ class SoundSimPlot:
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=0.1,
             vmax=self.data_matrix.max()
         )
 
@@ -145,7 +143,6 @@ class SoundSimPlot:
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=0.1,
             vmax=self.data_matrix.max()
         )
 
