@@ -28,7 +28,21 @@ class SoundSimPlot:
         """
         Updates the XY slice of the heatmap data being visualizes
         """
-        self.im1.set_data(self.data_matrix[val])
+        self.im1.set_data(self.data_matrix[:, :, val])
+        plt.draw()
+
+    def _updateYZSlice(self, val):
+        """
+        Updates the YZ slice of the heatmap data being visualizes
+        """
+        self.im2.set_data(self.data_matrix[:, val, :])
+        plt.draw()
+
+    def _updateXZSlice(self, val):
+        """
+        Updates the XZ slice of the heatmap data being visualizes
+        """
+        self.im3.set_data(self.data_matrix[val, :, :])
         plt.draw()
 
     def plotSimulation2D(self):
@@ -50,10 +64,7 @@ class SoundSimPlot:
         )
         plt.colorbar()
 
-        if dBA:
-            plt.title("Ultrasound Intensity (dBA) Around Transducer Array")
-        else:
-            plt.title("Ultrasound Intensity (dB) Around Transducer Array")
+        plt.title(f"Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
 
         plt.xlabel("Distance/MM")
         plt.ylabel("Distance/MM")
@@ -65,40 +76,53 @@ class SoundSimPlot:
     def plotSimulation3D(self):
         """
         Plots a 3-dimensional heatmap of the data
-        Plus a slider to let you select which volumes to show
+        Plus sliders to let you slice through cross-sections of the data
         """
         self.data_matrix = np.load("sim_data.npy")
 
         # Creates a set of subplots to plot on
-        fig, axes = plt.subplots(1, 1)
+        fig, axes = plt.subplots(1, 3)
         fig.canvas.manager.set_window_title("Sound Simulation")
 
         # Creates a standardised colour map for the heatmaps
         cmap = plt.get_cmap("plasma").copy()
         cmap.set_under("lightgrey")
 
-        self.im1 = axes.imshow(self.data_matrix[0],
+        # TODO: Proper minimum value calculation
+        self.im1 = axes[0].imshow(self.data_matrix[:, :, 0],
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=0,
+            vmin=0.1,
             vmax=self.data_matrix.max()
         )
-        fig.colorbar(self.im1, ax=axes, orientation='vertical', fraction=0.05)
+        self.im2 = axes[1].imshow(self.data_matrix[:, 0, :],
+            cmap=cmap,
+            interpolation="bilinear",
+            origin="lower",
+            vmin=0.1,
+            vmax=self.data_matrix.max()
+        )
+        self.im3 = axes[2].imshow(self.data_matrix[0, :, :],
+            cmap=cmap,
+            interpolation="bilinear",
+            origin="lower",
+            vmin=0.1,
+            vmax=self.data_matrix.max()
+        )
 
-        if dBA:
-            axes.set_title("Ultrasound Intensity (dBA) Around Transducer Array")
-        else:
-            axes.set_title("Ultrasound Intensity (dB) Around Transducer Array")
+        fig.colorbar(self.im3, ax=axes[2], orientation='vertical', fraction=0.05)
+
+        #axes[0].set_title(f"Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
 
         plt.xlabel("Distance/MM")
         plt.ylabel("Distance/MM")
 
-        # Adding a slider to control which XY slice is shown in the heatmap
-        axamp = fig.add_axes([0.1, 0.25, 0.0225, 0.63])
+        # Adding sliders to control which slices are shown in the heatmaps
+        sl_axes_1 = fig.add_axes([0.1, 0.2, 0.025, 0.6])
         xy_slice_slider = Slider(
-            ax = axamp,
-            label ="XY Slice Z-Height",
+            ax = sl_axes_1,
+            label ="Slice Z-Height",
             valmin=0,
             valmax=PLOTSIZE,
             valstep=1,
@@ -106,6 +130,30 @@ class SoundSimPlot:
             orientation="vertical"
         )
         xy_slice_slider.on_changed(self._updateXYSlice)
+
+        sl_axes_2 = fig.add_axes([0.4, 0.2, 0.025, 0.6])
+        yz_slice_slider = Slider(
+            ax = sl_axes_2,
+            label ="Slice X-Height",
+            valmin=0,
+            valmax=PLOTSIZE,
+            valstep=1,
+            valinit=0,
+            orientation="vertical"
+        )
+        yz_slice_slider.on_changed(self._updateYZSlice)
+
+        sl_axes_3 = fig.add_axes([0.7, 0.2, 0.025, 0.6])
+        xz_slice_slider = Slider(
+            ax = sl_axes_3,
+            label ="Slice Y-Height",
+            valmin=0,
+            valmax=PLOTSIZE,
+            valstep=1,
+            valinit=0,
+            orientation="vertical"
+        )
+        xz_slice_slider.on_changed(self._updateXZSlice)
 
         plt.show()
 
