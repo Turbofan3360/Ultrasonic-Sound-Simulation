@@ -12,7 +12,9 @@ _More details about their project and simulation in their paper, written here: <
 
 This simulation is a fully vectorised (using NumPy) computation that computes a matrix of the wave from each transducer across the grid. These matrices are then summed together, before the resulting wave magnitude at each point is taken to determine the final simulation result. Results are log-scaled that to a decibel result - either dB or dBA, depending on the your preference.
 
-The computation of the wave matrix from each transducer is run in parallel - one CPU core per transducer.
+The computation of the wave matrix from each transducer can be run in parallel - one CPU core per transducer.
+
+This simulation can be run in 3D as well - this requires significant amounts of memory to run. Currently only one visualisation of this data is available, which enables you to slice through the 3D space in the XY, XZ, and YZ planes. I intend to add more visualisations of this in future. 
 
 Any ideas to improve the simulation quality are welcome!
 
