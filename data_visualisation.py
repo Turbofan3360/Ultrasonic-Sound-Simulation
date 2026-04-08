@@ -167,7 +167,12 @@ class SoundSimPlot:
         ax2.set_title(f"YZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
         ax3.set_title(f"XZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
 
-        # TODO: Axes labels
+        ax1.set_xlabel("Distance (MM)")
+        ax2.set_xlabel("Distance (MM)")
+        ax3.set_xlabel("Distance (MM)")
+        ax1.set_ylabel("Distance (MM)")
+        ax2.set_ylabel("Distance (MM)")
+        ax3.set_ylabel("Distance (MM)")
 
         plt.show()
 
