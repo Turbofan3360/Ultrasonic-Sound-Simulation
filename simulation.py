@@ -242,6 +242,8 @@ def _generateTransducerMatrix3D(transducer_no):
 
     return amplitude_matrix
 
+
+
 def runVectorisedSimulation2D():
     """
     Runs the simulation as a fully vectorised operation.
