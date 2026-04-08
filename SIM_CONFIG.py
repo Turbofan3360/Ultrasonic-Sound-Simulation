@@ -5,6 +5,8 @@ import numpy as np
 
 # Distance around the ultrasonic array that you're modelling (in millimeters)
 PLOTSIZE = 500
+# 2D or 3D simulation
+3D = True
 # Max. number of CPU cores to be used in running the simulation
 CPU_CORES = 6
 # Simulated sound frequency in Hz
