@@ -111,7 +111,7 @@ class SoundSimPlot:
 if __name__ == "__main__":
     plotting = SoundSimPlot()
 
-    if 3D:
+    if sim3D:
         plotting.plotSimulation3D()
     else:
         plotting.plotSimulation2D()
