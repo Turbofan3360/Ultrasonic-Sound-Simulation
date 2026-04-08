@@ -210,6 +210,7 @@ def _generateTransducerMatrix3D(transducer_no):
     """
     Generates a 3D matrix showing the volumes produced due to the single transducer at each point in the cube
     """
+    _logger(f"Started computing transducer matrix {transducer_no}")
     # Creating an initial uniform sound amplitude matrix
     amplitude_matrix = np.full(
         (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
@@ -235,11 +236,12 @@ def _generateTransducerMatrix3D(transducer_no):
     phase_offsets = np.add(phase_offsets, TRANSDUCERS[transducer_no][2])
 
     # Using those to calculate wave phasors
+    _logger(f"Computing complex matrix {transducer_no}")
     complex_wave_amplitudes = np.exp(1j*phase_offsets)
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
     amplitude_matrix = np.multiply(amplitude_matrix, complex_wave_amplitudes)
-
+    _logger(f"Computed matrix {transducer_no}")
     return amplitude_matrix
 
 
@@ -253,8 +255,19 @@ def runVectorisedSimulation2D():
     """
     transducer_indexes = list(range(len(TRANSDUCERS)))
 
-    with Pool(processes=CPU_CORES) as pool:
-        results = pool.map(_generateTransducerMatrix2D, transducer_indexes)
+    if (CPU_CORES == 1):
+        sim_matrix = amplitude_matrix = np.full(
+            (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
+            0+0j
+        )
+
+        for i in transducer_indexes:
+            sim_matrix += _generateTransducerMatrix2D(i)
+    else:
+        with Pool(processes=CPU_CORES) as pool:
+            results = pool.map(_generateTransducerMatrix2D, transducer_indexes)
+        # Summing all the results matrices and taking absolute wave amplitude at each point
+        sim_matrix = np.sum(results, axis=0)
 
     # Summing all the results matrices and taking absolute wave amplitude at each point
     sim_matrix = np.sum(results, axis=0)
@@ -273,13 +286,23 @@ def runVectorisedSimulation3D():
     """
     transducer_indexes = list(range(len(TRANSDUCERS)))
 
-    with Pool(processes=CPU_CORES) as pool:
-        results = pool.map(_generateTransducerMatrix3D, transducer_indexes)
+    if (CPU_CORES == 1):
+        sim_matrix = amplitude_matrix = np.full(
+            (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
+            0+0j
+        )
 
-    # Summing all the results matrices and taking absolute wave amplitude at each point
-    sim_matrix = np.sum(results, axis=0)
+        for i in transducer_indexes:
+            sim_matrix += _generateTransducerMatrix3D(i)
+    else:
+        with Pool(processes=CPU_CORES) as pool:
+            results = pool.map(_generateTransducerMatrix3D, transducer_indexes)
+        # Summing all the results matrices and taking absolute wave amplitude at each point
+        _logger("Summing matrices")
+        sim_matrix = np.sum(results, axis=0)
+
     sim_matrix = np.abs(sim_matrix)
 
     sim_matrix_db = _convertTodB(sim_matrix)
-
+    _logger("Matrixes summed and scaled")
     return sim_matrix_db
