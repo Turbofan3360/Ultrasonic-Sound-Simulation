@@ -34,6 +34,36 @@ def _computeDBAWeight():
 
     return aweight
 
+def _convertTodB(amplitude_matrix):
+    """
+    Logarithmically scales the amplitudes into decibel readings
+    Adjusts for dB/dBA depending on what the user specified in the sim config
+    """
+    # If user wants results in dBA, need to compute the weighting for it
+    if dBA:
+        dba_weight = _computeDBAWeight()
+    else:
+        dba_weight = 0
+
+    # Producing a safe matrix to then logarithmically scale to dB (can't take log of zero)
+    amplitude_matrix_safe = np.where(
+        amplitude_matrix == 0,
+        0.00002,
+        amplitude_matrix
+    )
+
+    # Computing the volume in dB from the amplitude matrix
+    sim_matrix_db = 20*np.log10(amplitude_matrix_safe/0.00002) + dba_weight
+
+    # Removing sub-zero values (artefact of the simulation, doesn't mean anything in reality)
+    sim_matrix_db = np.where(
+        sim_matrix_db < 0,
+        0,
+        sim_matrix_db
+    )
+
+    return sim_matrix_db
+
 def _computeAttenuationFactor(dist_matrix):
     """
     Calculates and applies attenuation to the amplitude matrix
@@ -66,7 +96,7 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     Computes a matrix of the distances between the transducer and each point in the grid
     Computes a matrix of the angles between the transducer central axis and each point in the grid
     """
-    transducer_x, transducer_y = transducer_pos
+    transducer_x, transducer_y, _ = transducer_pos
 
     # Shaping my x/y values into matrices of the right shape
     x_vals = np.array(range(PLOTSIZE+1)).reshape(1, PLOTSIZE+1)
@@ -99,7 +129,48 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
 
     return distances, angles
 
-def _generateTransducerMatrix(transducer_no):
+def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
+    """
+    Computes a matrix of the 3D distances between the transducer and each point in the grid
+    Computes a matrix of the 3D angles between the transducer central axis and each point in the grid
+    """
+    transducer_x, transducer_y, transducer_z = transducer_pos
+
+    # Shaping my x/y values into matrices of the right shape
+    x_vals = np.array(range(PLOTSIZE+1)).reshape(1, PLOTSIZE+1, 1)
+    y_vals = np.array(range(PLOTSIZE+1)).reshape(PLOTSIZE+1, 1, 1)
+    z_vals = np.array(range(PLOTSIZE+1)).reshape(1, 1, PLOTSIZE+1)
+
+    # Calculating the x/y deltas between the transducer position and each point in the grid
+    delta_x_vals = x_vals - transducer_x
+    delta_y_vals = y_vals - transducer_y
+    delta_z_vals = z_vals - transducer_z
+
+    # Combining to calculate distances
+    distance_sq = np.square(delta_x_vals) + np.square(delta_y_vals) + np.square(delta_z_vals)
+    distances = np.sqrt(distance_sq)
+
+    # Calculating dot product matrix
+    dot_product_matrix = delta_x_vals*transducer_axis[0] + delta_y_vals*transducer_axis[1] + delta_z_vals*transducer_axis[2]
+    axis_vec_length = np.linalg.norm(transducer_axis)
+
+    # Calculating the cosine of the angles as a matrix
+    angles_cosine = np.divide(dot_product_matrix, axis_vec_length)
+
+    # Guarding against zero-division errors
+    # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
+    safe_distances = np.where(distances == 0, 1, distances)
+    angles_cosine = np.divide(angles_cosine, safe_distances)
+
+    # Keeping cosine values in range
+    angles_cosine = np.clip(angles_cosine, -1, 1)
+
+    # Calculating the angles as a matrix
+    angles = np.arccos(angles_cosine)
+
+    return distances, angles
+
+def _generateTransducerMatrix2D(transducer_no):
     """
     Generates a matrix showing the volumes produced due to the single transducer at each point in the grid
     """
@@ -135,6 +206,42 @@ def _generateTransducerMatrix(transducer_no):
 
     return amplitude_matrix
 
+def _generateTransducerMatrix3D(transducer_no):
+    """
+    Generates a 3D matrix showing the volumes produced due to the single transducer at each point in the cube
+    """
+    # Creating an initial uniform sound amplitude matrix
+    amplitude_matrix = np.full(
+        (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
+        _PRESS_AMPLITUDE * R0
+    )
+
+    # Computing all required bits to determine sound wave amplitude at each point in the grid
+    # Then applying these to the amplitude matrix
+    dist_matrix, angle_matrix = _computeTransducerDistancesAngles3D(
+        _TRANSDUCER_POS_VECTORS[transducer_no],
+        _TRANSDUCER_AXIS_VECTORS[transducer_no]
+    )
+    attenuation_factors = _computeAttenuationFactor(dist_matrix)
+    beam_angle_factors = userComputeBeamAngleResponse(angle_matrix)
+
+    amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
+    amplitude_matrix = np.multiply(amplitude_matrix, beam_angle_factors)
+
+    # Computing phase offset in radians at each point in the grid
+    phase_offsets = np.divide(dist_matrix, _WAVELENGTH)
+    phase_offsets = np.multiply(phase_offsets, 2*np.pi)
+    # Adding on transducer phase offset
+    phase_offsets = np.add(phase_offsets, TRANSDUCERS[transducer_no][2])
+
+    # Using those to calculate wave phasors
+    complex_wave_amplitudes = np.exp(1j*phase_offsets)
+
+    # Applying wave amplitude (magnitude) to the wave phasor representation
+    amplitude_matrix = np.multiply(amplitude_matrix, complex_wave_amplitudes)
+
+    return amplitude_matrix
+
 def runVectorisedSimulation2D():
     """
     Runs the simulation as a fully vectorised operation.
@@ -144,34 +251,33 @@ def runVectorisedSimulation2D():
     """
     transducer_indexes = list(range(len(TRANSDUCERS)))
 
-    # If user wants results in dBA, need to compute the weighting for it
-    if dBA:
-        dba_weight = _computeDBAWeight()
-    else:
-        dba_weight = 0
-
     with Pool(processes=CPU_CORES) as pool:
-        results = pool.map(_generateTransducerMatrix, transducer_indexes)
+        results = pool.map(_generateTransducerMatrix2D, transducer_indexes)
 
-    # Summing all my results matrices
+    # Summing all the results matrices and taking absolute wave amplitude at each point
     sim_matrix = np.sum(results, axis=0)
     sim_matrix = np.abs(sim_matrix)
 
-    # Producing a safe matrix to then logarithmically scale to dB
-    sim_matrix_safe = np.where(
-        sim_matrix == 0,
-        0.00002,
-        sim_matrix
-    )
+    sim_matrix_db = _convertTodB(sim_matrix)
 
-    # Computing the volume in dB from the amplitude matrix
-    sim_matrix_db = 20*np.log10(sim_matrix_safe/0.00002) + dba_weight
+    return sim_matrix_db
 
-    # Removing sub-zero values
-    sim_matrix_db = np.where(
-        sim_matrix_db < 0,
-        0,
-        sim_matrix_db
-    )
+def runVectorisedSimulation3D():
+    """
+    Runs the 3D simulation as a fully vectorised operation.
+
+    For each transducer, a matrix is computed with the volume levels at each
+    point in the simulation grid, and these matrices are then added together.
+    """
+    transducer_indexes = list(range(len(TRANSDUCERS)))
+
+    with Pool(processes=CPU_CORES) as pool:
+        results = pool.map(_generateTransducerMatrix3D, transducer_indexes)
+
+    # Summing all the results matrices and taking absolute wave amplitude at each point
+    sim_matrix = np.sum(results, axis=0)
+    sim_matrix = np.abs(sim_matrix)
+
+    sim_matrix_db = _convertTodB(sim_matrix)
 
     return sim_matrix_db

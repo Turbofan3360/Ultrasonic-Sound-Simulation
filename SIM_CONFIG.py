@@ -16,10 +16,11 @@ R0 = 0.3
 # Boolean to determine whether you want the output as dBA (True) or dB (False)
 dBA = True
 # Transducer data formatted as [[x-y position vector], [x-y transducer central axis vector], phase offset (radians)]]
+# Vectors should always be x-y-z, even if running a 2D simulation. Set z=0 in vectors when wanting a 2D simulation
 TRANSDUCERS = [
-    [[150, 50], [0, 1], 0],
-    [[250, 50], [0, 1], 0],
-    [[350, 50], [0, 1], 0]
+    [[150, 50, 0], [0, 1, 0], 0],
+    [[250, 50, 0], [0, 1, 0], 0],
+    [[350, 50, 0], [0, 1, 0], 0]
 ]
 
 # Scale factor to make the sinc function behave as wanted for beam angle attenuation
