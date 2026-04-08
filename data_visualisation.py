@@ -80,30 +80,27 @@ class SoundSimPlot:
         """
         self.data_matrix = np.load("sim_data.npy")
 
-        # Creates a set of subplots to plot on
-        fig, axes = plt.subplots(1, 3)
+        # Creates a figure to plot on
+        fig = plt.figure(figsize=(15, 5))
         fig.canvas.manager.set_window_title("Sound Simulation")
+
+        # Creates axes to put my plots and sliders on
+        ax1 = fig.add_axes([0.065, 0.15, 0.25, 0.75])
+        ax2 = fig.add_axes([0.385, 0.15, 0.25, 0.75])
+        ax3 = fig.add_axes([0.70, 0.15, 0.25, 0.75])
+
+        sl_ax1 = fig.add_axes([0.015, 0.15, 0.01, 0.7])
+        sl_ax2 = fig.add_axes([0.330, 0.15, 0.01, 0.7])
+        sl_ax3 = fig.add_axes([0.650, 0.15, 0.01, 0.7])
+
+        cbar_ax = fig.add_axes([0.96, 0.15, 0.01, 0.75])
 
         # Creates a standardised colour map for the heatmaps
         cmap = plt.get_cmap("plasma").copy()
         cmap.set_under("lightgrey")
 
         # TODO: Proper minimum value calculation
-        self.im1 = axes[0].imshow(self.data_matrix[:, :, 0],
-            cmap=cmap,
-            interpolation="bilinear",
-            origin="lower",
-            vmin=0.1,
-            vmax=self.data_matrix.max()
-        )
-        self.im2 = axes[1].imshow(self.data_matrix[:, 0, :],
-            cmap=cmap,
-            interpolation="bilinear",
-            origin="lower",
-            vmin=0.1,
-            vmax=self.data_matrix.max()
-        )
-        self.im3 = axes[2].imshow(self.data_matrix[0, :, :],
+        self.im1 = ax1.imshow(self.data_matrix[:, :, 0],
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
@@ -111,18 +108,10 @@ class SoundSimPlot:
             vmax=self.data_matrix.max()
         )
 
-        fig.colorbar(self.im3, ax=axes[2], orientation='vertical', fraction=0.05)
-
-        #axes[0].set_title(f"Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
-
-        plt.xlabel("Distance/MM")
-        plt.ylabel("Distance/MM")
-
-        # Adding sliders to control which slices are shown in the heatmaps
-        sl_axes_1 = fig.add_axes([0.1, 0.2, 0.025, 0.6])
+        # Adding slider to control which slice is shown in the heatmaps
         xy_slice_slider = Slider(
-            ax = sl_axes_1,
-            label ="Slice Z-Height",
+            ax = sl_ax1,
+            label ="Slice Z",
             valmin=0,
             valmax=PLOTSIZE,
             valstep=1,
@@ -131,10 +120,19 @@ class SoundSimPlot:
         )
         xy_slice_slider.on_changed(self._updateXYSlice)
 
-        sl_axes_2 = fig.add_axes([0.4, 0.2, 0.025, 0.6])
+        # Repeating for other perspectives (XZ/YZ slices)
+
+        self.im2 = ax2.imshow(self.data_matrix[:, 0, :],
+            cmap=cmap,
+            interpolation="bilinear",
+            origin="lower",
+            vmin=0.1,
+            vmax=self.data_matrix.max()
+        )
+
         yz_slice_slider = Slider(
-            ax = sl_axes_2,
-            label ="Slice X-Height",
+            ax = sl_ax2,
+            label ="Slice X",
             valmin=0,
             valmax=PLOTSIZE,
             valstep=1,
@@ -143,10 +141,17 @@ class SoundSimPlot:
         )
         yz_slice_slider.on_changed(self._updateYZSlice)
 
-        sl_axes_3 = fig.add_axes([0.7, 0.2, 0.025, 0.6])
+        self.im3 = ax3.imshow(self.data_matrix[0, :, :],
+            cmap=cmap,
+            interpolation="bilinear",
+            origin="lower",
+            vmin=0.1,
+            vmax=self.data_matrix.max()
+        )
+
         xz_slice_slider = Slider(
-            ax = sl_axes_3,
-            label ="Slice Y-Height",
+            ax = sl_ax3,
+            label ="Slice Y",
             valmin=0,
             valmax=PLOTSIZE,
             valstep=1,
@@ -154,6 +159,15 @@ class SoundSimPlot:
             orientation="vertical"
         )
         xz_slice_slider.on_changed(self._updateXZSlice)
+
+        fig.colorbar(self.im3, cax=cbar_ax)
+
+        # Setting plot titles
+        ax1.set_title(f"XY Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
+        ax2.set_title(f"YZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
+        ax3.set_title(f"XZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
+
+        # TODO: Axes labels
 
         plt.show()
 
