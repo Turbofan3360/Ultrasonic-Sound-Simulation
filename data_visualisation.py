@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
 from simulation import runVectorisedSimulation2D, runVectorisedSimulation3D
 from SIM_CONFIG import *
@@ -8,7 +9,7 @@ from SIM_CONFIG import *
 class SoundSimPlot:
     data_matrix = []
 
-    def _computeMatrixNonZeroMin(self, data):
+    def _compute2DMatrixNonZeroMin(self, data):
         """
         Finds the minimum value in a 2-dimensional list.
 
@@ -44,7 +45,7 @@ class SoundSimPlot:
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=self._computeMatrixNonZeroMin(self.data_matrix),
+            vmin=self._compute2DMatrixNonZeroMin(self.data_matrix),
             vmax=self.data_matrix.max()
         )
         plt.colorbar()
@@ -66,7 +67,7 @@ class SoundSimPlot:
         Plots a 3-dimensional heatmap of the data
         Plus a slider to let you select which volumes to show
         """
-        self.data_matrix = runVectorisedSimulation3D()
+        self.data_matrix = np.load("sim_data.npy")
 
         # Creates a set of subplots to plot on
         fig, axes = plt.subplots(1, 1)
@@ -80,10 +81,10 @@ class SoundSimPlot:
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=self._computeMatrixNonZeroMin(self.data_matrix),
+            vmin=0,
             vmax=self.data_matrix.max()
         )
-        fig.colorbar(im1, ax=axes, orientation='vertical', fraction=0.05)
+        fig.colorbar(self.im1, ax=axes, orientation='vertical', fraction=0.05)
 
         if dBA:
             axes.set_title("Ultrasound Intensity (dBA) Around Transducer Array")
@@ -100,6 +101,7 @@ class SoundSimPlot:
             label ="XY Slice Z-Height",
             valmin=0,
             valmax=PLOTSIZE,
+            valstep=1,
             valinit=0,
             orientation="vertical"
         )
