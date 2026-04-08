@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
 from simulation import runVectorisedSimulation2D, runVectorisedSimulation3D
 from SIM_CONFIG import *
@@ -8,7 +9,7 @@ from SIM_CONFIG import *
 class SoundSimPlot:
     data_matrix = []
 
-    def _computeMatrixNonZeroMin(self, data):
+    def _compute2DMatrixNonZeroMin(self, data):
         """
         Finds the minimum value in a 2-dimensional list.
 
@@ -27,7 +28,21 @@ class SoundSimPlot:
         """
         Updates the XY slice of the heatmap data being visualizes
         """
-        self.im1.set_data(self.data_matrix[val])
+        self.im1.set_data(self.data_matrix[:, :, val])
+        plt.draw()
+
+    def _updateYZSlice(self, val):
+        """
+        Updates the YZ slice of the heatmap data being visualizes
+        """
+        self.im2.set_data(self.data_matrix[:, val, :])
+        plt.draw()
+
+    def _updateXZSlice(self, val):
+        """
+        Updates the XZ slice of the heatmap data being visualizes
+        """
+        self.im3.set_data(self.data_matrix[val, :, :])
         plt.draw()
 
     def plotSimulation2D(self):
@@ -44,15 +59,12 @@ class SoundSimPlot:
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=self._computeMatrixNonZeroMin(self.data_matrix),
+            vmin=self._compute2DMatrixNonZeroMin(self.data_matrix),
             vmax=self.data_matrix.max()
         )
         plt.colorbar()
 
-        if dBA:
-            plt.title("Ultrasound Intensity (dBA) Around Transducer Array")
-        else:
-            plt.title("Ultrasound Intensity (dB) Around Transducer Array")
+        plt.title(f"Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
 
         plt.xlabel("Distance/MM")
         plt.ylabel("Distance/MM")
@@ -64,50 +76,108 @@ class SoundSimPlot:
     def plotSimulation3D(self):
         """
         Plots a 3-dimensional heatmap of the data
-        Plus a slider to let you select which volumes to show
+        Plus sliders to let you slice through cross-sections of the data
         """
-        self.data_matrix = runVectorisedSimulation3D()
+        self.data_matrix = np.load("sim_data.npy")
 
-        # Creates a set of subplots to plot on
-        fig, axes = plt.subplots(1, 1)
+        # Creates a figure to plot on
+        fig = plt.figure(figsize=(16, 5))
         fig.canvas.manager.set_window_title("Sound Simulation")
+
+        # Creates axes to put my plots, sliders, and colourbar on
+        ax1 = fig.add_axes([0.065, 0.15, 0.25, 0.75])
+        ax2 = fig.add_axes([0.385, 0.15, 0.25, 0.75])
+        ax3 = fig.add_axes([0.70, 0.15, 0.25, 0.75])
+
+        sl_ax1 = fig.add_axes([0.02, 0.15, 0.01, 0.75])
+        sl_ax2 = fig.add_axes([0.34, 0.15, 0.01, 0.75])
+        sl_ax3 = fig.add_axes([0.655, 0.15, 0.01, 0.75])
+
+        cbar_ax = fig.add_axes([0.96, 0.15, 0.01, 0.75])
 
         # Creates a standardised colour map for the heatmaps
         cmap = plt.get_cmap("plasma").copy()
         cmap.set_under("lightgrey")
 
-        self.im1 = axes.imshow(self.data_matrix[0],
+        # TODO: Proper minimum value calculation
+        self.im1 = ax1.imshow(self.data_matrix[:, :, 0],
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
-            vmin=self._computeMatrixNonZeroMin(self.data_matrix),
             vmax=self.data_matrix.max()
         )
-        fig.colorbar(im1, ax=axes, orientation='vertical', fraction=0.05)
 
-        if dBA:
-            axes.set_title("Ultrasound Intensity (dBA) Around Transducer Array")
-        else:
-            axes.set_title("Ultrasound Intensity (dB) Around Transducer Array")
-
-        plt.xlabel("Distance/MM")
-        plt.ylabel("Distance/MM")
-
-        # Adding a slider to control which XY slice is shown in the heatmap
-        axamp = fig.add_axes([0.1, 0.25, 0.0225, 0.63])
+        # Adding slider to control which slice is shown in the heatmaps
         xy_slice_slider = Slider(
-            ax = axamp,
-            label ="XY Slice Z-Height",
+            ax = sl_ax1,
+            label ="Slice Z",
             valmin=0,
             valmax=PLOTSIZE,
+            valstep=1,
             valinit=0,
             orientation="vertical"
         )
         xy_slice_slider.on_changed(self._updateXYSlice)
+
+        # Repeating for other perspectives (XZ/YZ slices)
+
+        self.im2 = ax2.imshow(self.data_matrix[:, 0, :],
+            cmap=cmap,
+            interpolation="bilinear",
+            origin="lower",
+            vmax=self.data_matrix.max()
+        )
+
+        yz_slice_slider = Slider(
+            ax = sl_ax2,
+            label ="Slice X",
+            valmin=0,
+            valmax=PLOTSIZE,
+            valstep=1,
+            valinit=0,
+            orientation="vertical"
+        )
+        yz_slice_slider.on_changed(self._updateYZSlice)
+
+        self.im3 = ax3.imshow(self.data_matrix[0, :, :],
+            cmap=cmap,
+            interpolation="bilinear",
+            origin="lower",
+            vmax=self.data_matrix.max()
+        )
+
+        xz_slice_slider = Slider(
+            ax = sl_ax3,
+            label ="Slice Y",
+            valmin=0,
+            valmax=PLOTSIZE,
+            valstep=1,
+            valinit=0,
+            orientation="vertical"
+        )
+        xz_slice_slider.on_changed(self._updateXZSlice)
+
+        fig.colorbar(self.im3, cax=cbar_ax)
+
+        # Setting plot titles
+        ax1.set_title(f"XY Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
+        ax2.set_title(f"YZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
+        ax3.set_title(f"XZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
+
+        ax1.set_xlabel("Distance (MM)")
+        ax2.set_xlabel("Distance (MM)")
+        ax3.set_xlabel("Distance (MM)")
+        ax1.set_ylabel("Distance (MM)")
+        ax2.set_ylabel("Distance (MM)")
+        ax3.set_ylabel("Distance (MM)")
 
         plt.show()
 
 
 if __name__ == "__main__":
     plotting = SoundSimPlot()
-    plotting.plotSimulation3D()
+
+    if sim3D:
+        plotting.plotSimulation3D()
+    else:
+        plotting.plotSimulation2D()
