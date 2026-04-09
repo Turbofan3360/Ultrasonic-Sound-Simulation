@@ -33,7 +33,7 @@ MAX_BEAM_ANGLE = 100*(np.pi/180)
 def userComputeBeamAngleResponse(angles_matrix):
     """
     Computes scalars for every point in the grid to apply the transducer's beam angle profile
-    User-definable - all operations here should be NumPy matrix operations
+    User-definable - all operations here should be NumPy matrix operations, suggested to be in float32/complex64 for memory efficiency
 
     The angles_matrix parameter is a matrix of the angle of each point in the
     plot from the transducer's central axis (in radians)
