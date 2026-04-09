@@ -14,11 +14,20 @@ This simulation is a fully vectorised (using NumPy) computation that computes a 
 
 The computation of the wave matrix from each transducer can be run in parallel - one CPU core per transducer.
 
-This simulation can be run in 3D as well - this requires a fair bit of memory to run, although this can be halved by setting COMPRESS_FLOAT=True. Currently only one visualisation of this data is available, which enables you to slice through the 3D space in the XY, XZ, and YZ planes. I intend to add more visualisations of this in future.
+This simulation can be run in 3D as well - this requires a fair bit of memory to run, although this can be halved by setting COMPRESS_FLOAT=True. You can select different ways to visualise this - either using matplotlib to view slices through the data in the XY/XZ/YZ planes, or Napari to view a full 3D visualisation of the data.
 
 Any ideas to improve the simulation quality are welcome!
 
 ![Example image - 9 transducers, planar arrangment, no phase offsets](img/example_3d_sim.png)
+
+### Dependencies: ###
+
+- Python 3
+    - Napari
+    - NumPy
+    - Matplotlib
+
+All these Python 3 packages can be installed via pip
 
 ### Simulation Configuration: ###
 
@@ -27,6 +36,8 @@ In the SIM_CONFIG.py file are all the things that can be tuned to produce your s
 PLOTSIZE - The size of each side of the plot (in millimeters - to reduce simulation resolution requires a bit more code tweaking)
 
 sim3D - If True, the simulation will be 3D - otherwise it will be 2D
+
+VIEWMODE_3D - If 0, 3D simulations will be displayed with matplotlib showing slices through the data in the XY/XZ/YZ planes. If 1, Napari will be used to view a full 3D visualisation of the data.
 
 COMPRESS_FLOAT - If True, Float32 will be used instead of Float64, halving the memory usage of the program
 
