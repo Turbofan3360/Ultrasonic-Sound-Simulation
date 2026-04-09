@@ -137,7 +137,6 @@ class SoundSimPlot:
 
         cbar_ax = fig.add_axes([0.96, 0.15, 0.01, 0.75])
 
-        # TODO: Proper minimum value calculation
         self.im1 = ax1.imshow(self.data_matrix[:, :, 0],
             cmap=cmap,
             interpolation="bilinear",
