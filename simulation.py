@@ -13,6 +13,7 @@ _PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
 _TRANSDUCER_POS_VECTORS = [np.array(i[0]) for i in TRANSDUCERS]
 _TRANSDUCER_AXIS_VECTORS = [np.array(i[1]) for i in TRANSDUCERS]
 _FLOAT_TYPE = np.float32 if COMPRESS_FLOAT else np.float64
+_COMPLEX_TYPE = np.complex64 if COMPRESS_FLOAT else np.complex128
 
 def _logger(string):
     """
@@ -203,7 +204,7 @@ def _generateTransducerMatrix2D(transducer_no):
     np.add(phase_offsets, TRANSDUCERS[transducer_no][2], out=phase_offsets)
 
     # Using those to calculate wave phasors
-    complex_wave_amplitudes = np.exp(phase_offsets*np.complex64(1j))
+    complex_wave_amplitudes = np.exp(phase_offsets*_COMPLEX_TYPE(1j))
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
     np.multiply(amplitude_matrix, complex_wave_amplitudes, out=complex_wave_amplitudes)
@@ -243,8 +244,7 @@ def _generateTransducerMatrix3D(transducer_no):
     np.add(phase_offsets, TRANSDUCERS[transducer_no][2], out=phase_offsets)
 
     # Using those to calculate wave phasors
-    # Specificying Complex64 instead of Complex128 as 32-bit floats give enough precision to work with
-    complex_wave_amplitudes = np.exp(phase_offsets*np.complex64(1j))
+    complex_wave_amplitudes = np.exp(phase_offsets*_COMPLEX_TYPE(1j))
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
     np.multiply(amplitude_matrix, complex_wave_amplitudes, out=complex_wave_amplitudes)
@@ -267,7 +267,7 @@ def runVectorisedSimulation2D():
         sim_matrix = np.full(
             (PLOTSIZE+1, PLOTSIZE+1),
             0+0j,
-            dtype=np.complex64
+            dtype=_COMPLEX_TYPE
         )
 
         for i in transducer_indexes:
@@ -298,7 +298,7 @@ def runVectorisedSimulation3D():
         sim_matrix = np.full(
             (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
             0+0j,
-            dtype=np.complex64
+            dtype=_COMPLEX_TYPE
         )
 
         for i in transducer_indexes:
