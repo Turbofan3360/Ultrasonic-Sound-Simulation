@@ -74,7 +74,7 @@ def _computeAttenuationFactor(dist_matrix):
 
     # Calculating atmospheric attenuation of sound
     atmospheric_attenuation = np.multiply(dist_matrix, -_ATTENUATION_CONSTANT)
-    atmospheric_attenuation = np.exp(atmospheric_attenuation)
+    np.exp(atmospheric_attenuation, out=atmospheric_attenuation)
 
     # Calculating attenuation of sound due to distance
     # Guards against zero division error
@@ -112,7 +112,6 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
 
     # Calculating dot product matrix
     dot_product_matrix = delta_x_vals*transducer_axis[0] + delta_y_vals*transducer_axis[1]
-
     axis_vec_length = np.linalg.norm(transducer_axis)
 
     # Calculating the cosine of the angles as a matrix
@@ -120,9 +119,10 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     # Guarding against zero-division errors
     # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
     distances = np.where(distances == 0, 1, distances)
-    angles_cosine = np.divide(angles_cosine, distances)
+    np.divide(angles_cosine, distances, out=angles_cosine)
+
     # Keeping cosine values in range
-    angles_cosine = np.clip(angles_cosine, -1, 1)
+    np.clip(angles_cosine, -1, 1, out=angles_cosine)
 
     # Calculating the angles as a matrix
     angles = np.arccos(angles_cosine)
@@ -160,10 +160,10 @@ def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
     # Guarding against zero-division errors
     # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
     distances = np.where(distances == 0, 1, distances)
-    angles_cosine = np.divide(angles_cosine, distances)
+    np.divide(angles_cosine, distances, out=angles_cosine)
 
     # Keeping cosine values in range
-    angles_cosine = np.clip(angles_cosine, -1, 1)
+    np.clip(angles_cosine, -1, 1, out=angles_cosine)
 
     # Calculating the angles as a matrix
     angles = np.arccos(angles_cosine)
@@ -189,22 +189,24 @@ def _generateTransducerMatrix2D(transducer_no):
     attenuation_factors = _computeAttenuationFactor(dist_matrix)
     beam_angle_factors = userComputeBeamAngleResponse(angle_matrix)
 
-    amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
-    amplitude_matrix = np.multiply(amplitude_matrix, beam_angle_factors)
+    # Applying those two calculations to the amplitudes
+    np.multiply(attenuation_factors, beam_angle_factors, out=attenuation_factors)
+    np.multiply(amplitude_matrix, attenuation_factors, out=amplitude_matrix)
 
     # Computing phase offset in radians at each point in the grid
     phase_offsets = np.divide(dist_matrix, _WAVELENGTH)
-    phase_offsets = np.multiply(phase_offsets, 2*np.pi)
+    np.multiply(phase_offsets, 2*np.pi, out=phase_offsets)
+
     # Adding on transducer phase offset
-    phase_offsets = np.add(phase_offsets, TRANSDUCERS[transducer_no][2])
+    np.add(phase_offsets, TRANSDUCERS[transducer_no][2], out=phase_offsets)
 
     # Using those to calculate wave phasors
     complex_wave_amplitudes = np.exp(1j*phase_offsets)
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
-    amplitude_matrix = np.multiply(amplitude_matrix, complex_wave_amplitudes)
+    np.multiply(amplitude_matrix, complex_wave_amplitudes, out=complex_wave_amplitudes)
 
-    return amplitude_matrix
+    return complex_wave_amplitudes
 
 def _generateTransducerMatrix3D(transducer_no):
     """
@@ -224,23 +226,27 @@ def _generateTransducerMatrix3D(transducer_no):
         _TRANSDUCER_AXIS_VECTORS[transducer_no]
     )
     attenuation_factors = _computeAttenuationFactor(dist_matrix)
-    attenuation_factors = np.multiply(attenuation_factors, userComputeBeamAngleResponse(angle_matrix))
+    beam_angle_factors = userComputeBeamAngleResponse(angle_matrix)
 
-    amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
+    # Applying those two calculations to the amplitudes
+    np.multiply(attenuation_factors, beam_angle_factors, out=attenuation_factors)
+    np.multiply(amplitude_matrix, attenuation_factors, out=amplitude_matrix)
 
     # Computing phase offset in radians at each point in the grid
     phase_offsets = np.divide(dist_matrix, _WAVELENGTH)
-    phase_offsets = np.multiply(phase_offsets, 2*np.pi)
+    np.multiply(phase_offsets, 2*np.pi, out=phase_offsets)
+
     # Adding on transducer phase offset
-    phase_offsets = np.add(phase_offsets, TRANSDUCERS[transducer_no][2])
+    np.add(phase_offsets, TRANSDUCERS[transducer_no][2], out=phase_offsets)
 
     # Using those to calculate wave phasors
     complex_wave_amplitudes = np.exp(1j*phase_offsets)
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
-    amplitude_matrix = np.multiply(amplitude_matrix, complex_wave_amplitudes)
+    np.multiply(amplitude_matrix, complex_wave_amplitudes, out=complex_wave_amplitudes)
     _logger(f"Computed matrix {transducer_no}")
-    return amplitude_matrix
+
+    return complex_wave_amplitudes
 
 
 
@@ -268,7 +274,6 @@ def runVectorisedSimulation2D():
         sim_matrix = np.sum(results, axis=0)
 
     # Summing all the results matrices and taking absolute wave amplitude at each point
-    sim_matrix = np.sum(results, axis=0)
     sim_matrix = np.abs(sim_matrix)
 
     sim_matrix_db = _convertTodB(sim_matrix)
