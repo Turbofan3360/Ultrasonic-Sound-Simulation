@@ -2,7 +2,7 @@
 
 from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
-import pyvista as pv
+import napari
 from simulation import runVectorisedSimulation2D, runVectorisedSimulation3D
 from SIM_CONFIG import *
 
@@ -57,7 +57,7 @@ class SoundSimPlot:
         """
         Calls the computation of the 3D data matrix, and then calls the desired visualisation function
         """
-        self.data_matrix = np.load("sim_data.npy")
+        self.data_matrix = runVectorisedSimulation3D()
 
         # Creates a standardised colour map for the heatmaps
         cmap = plt.get_cmap("plasma").copy()
@@ -70,23 +70,28 @@ class SoundSimPlot:
 
     def _volumetricView(self, cmap):
         """
-        Uses PyVista to generate a volumetric view of the 3D data matrix
-        Generates a slider to set which dB volumes you want to see in the view
+        Uses napari to generate a volumetric view of the 3D data matrix
         """
-        # Creating the PyVista ImageData object
-        img_data = pv.ImageData()
+        # Initialising the viewer
+        viewer = napari.Viewer(ndisplay=3)
 
-        # Defining dimensions
-        img_data.dimensions = self.data_matrix.shape
+        # Adding my data to the viewer
+        img = viewer.add_image(
+            self.data_matrix,
+            name="Ultrasound Intensity",
+            colormap="inferno"
+        )
 
-        # Flattening the data matrix so it can be displayed
-        self.data_matrix = self.data_matrix.flatten(order="F")
+        # Displaying a colorbar, and a box around the data cube
+        img.colorbar.visible = True
+        img.bounding_box.visible = True
 
-        # Plotting the data
-        img_data.point_data["sound_sim"] = self.data_matrix
+        # Setting the startup camera view
+        viewer.camera.zoom = 0.5
+        viewer.camera.angles = (0, 30, 30)
+        viewer.camera.center = (250, 250, 250)
 
-        # Displaying the plot
-        img_data.plot(volume=True)
+        napari.run()
 
     def _updateXYSlice(self, val):
         """
