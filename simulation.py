@@ -119,8 +119,8 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     angles_cosine = np.divide(dot_product_matrix, axis_vec_length)
     # Guarding against zero-division errors
     # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
-    safe_distances = np.where(distances == 0, 1, distances)
-    angles_cosine = np.divide(angles_cosine, safe_distances)
+    distances = np.where(distances == 0, 1, distances)
+    angles_cosine = np.divide(angles_cosine, distances)
     # Keeping cosine values in range
     angles_cosine = np.clip(angles_cosine, -1, 1)
 
@@ -159,8 +159,8 @@ def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
 
     # Guarding against zero-division errors
     # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
-    safe_distances = np.where(distances == 0, 1, distances)
-    angles_cosine = np.divide(angles_cosine, safe_distances)
+    distances = np.where(distances == 0, 1, distances)
+    angles_cosine = np.divide(angles_cosine, distances)
 
     # Keeping cosine values in range
     angles_cosine = np.clip(angles_cosine, -1, 1)
@@ -224,10 +224,9 @@ def _generateTransducerMatrix3D(transducer_no):
         _TRANSDUCER_AXIS_VECTORS[transducer_no]
     )
     attenuation_factors = _computeAttenuationFactor(dist_matrix)
-    beam_angle_factors = userComputeBeamAngleResponse(angle_matrix)
+    attenuation_factors = np.multiply(attenuation_factors, userComputeBeamAngleResponse(angle_matrix))
 
     amplitude_matrix = np.multiply(amplitude_matrix, attenuation_factors)
-    amplitude_matrix = np.multiply(amplitude_matrix, beam_angle_factors)
 
     # Computing phase offset in radians at each point in the grid
     phase_offsets = np.divide(dist_matrix, _WAVELENGTH)
@@ -236,7 +235,6 @@ def _generateTransducerMatrix3D(transducer_no):
     phase_offsets = np.add(phase_offsets, TRANSDUCERS[transducer_no][2])
 
     # Using those to calculate wave phasors
-    _logger(f"Computing complex matrix {transducer_no}")
     complex_wave_amplitudes = np.exp(1j*phase_offsets)
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
@@ -256,7 +254,7 @@ def runVectorisedSimulation2D():
     transducer_indexes = list(range(len(TRANSDUCERS)))
 
     if (CPU_CORES == 1):
-        sim_matrix = amplitude_matrix = np.full(
+        sim_matrix = np.full(
             (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
             0+0j
         )
@@ -287,7 +285,7 @@ def runVectorisedSimulation3D():
     transducer_indexes = list(range(len(TRANSDUCERS)))
 
     if (CPU_CORES == 1):
-        sim_matrix = amplitude_matrix = np.full(
+        sim_matrix = np.full(
             (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
             0+0j
         )
@@ -304,5 +302,4 @@ def runVectorisedSimulation3D():
     sim_matrix = np.abs(sim_matrix)
 
     sim_matrix_db = _convertTodB(sim_matrix)
-    _logger("Matrixes summed and scaled")
     return sim_matrix_db
