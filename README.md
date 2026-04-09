@@ -14,7 +14,7 @@ This simulation is a fully vectorised (using NumPy) computation that computes a 
 
 The computation of the wave matrix from each transducer can be run in parallel - one CPU core per transducer.
 
-This simulation can be run in 3D as well - this requires a fair bit of memory to run. Currently only one visualisation of this data is available, which enables you to slice through the 3D space in the XY, XZ, and YZ planes. I intend to add more visualisations of this in future.
+This simulation can be run in 3D as well - this requires a fair bit of memory to run, although this can be halved by setting COMPRESS_FLOAT=True. Currently only one visualisation of this data is available, which enables you to slice through the 3D space in the XY, XZ, and YZ planes. I intend to add more visualisations of this in future.
 
 Any ideas to improve the simulation quality are welcome!
 
@@ -26,7 +26,9 @@ In the SIM_CONFIG.py file are all the things that can be tuned to produce your s
 
 PLOTSIZE - The size of each side of the plot (in millimeters - to reduce simulation resolution requires a bit more code tweaking)
 
-sim3D - Whether or not the simulation will run in 3 Dimensions (if not then a 2D simulation is run)
+sim3D - If True, the simulation will be 3D - otherwise it will be 2D
+
+COMPRESS_FLOAT - If True, Float32 will be used instead of Float64, halving the memory usage of the program
 
 CPU_CORES - The maximum number of CPU cores the simulation will use when running
 
