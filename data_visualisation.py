@@ -35,14 +35,14 @@ class SoundSimPlot:
         """
         Updates the YZ slice of the heatmap data being visualizes
         """
-        self.im2.set_data(self.data_matrix[:, val, :])
+        self.im2.set_data(self.data_matrix[:, val, :].T)
         plt.draw()
 
     def _updateXZSlice(self, val):
         """
         Updates the XZ slice of the heatmap data being visualizes
         """
-        self.im3.set_data(self.data_matrix[val, :, :])
+        self.im3.set_data(self.data_matrix[val, :, :].T)
         plt.draw()
 
     def plotSimulation2D(self):
@@ -78,7 +78,7 @@ class SoundSimPlot:
         Plots a 3-dimensional heatmap of the data
         Plus sliders to let you slice through cross-sections of the data
         """
-        self.data_matrix = runVectorisedSimulation3D()
+        self.data_matrix = np.load("sim_data.npy")
 
         # Creates a figure to plot on
         fig = plt.figure(figsize=(16, 5))
@@ -121,7 +121,7 @@ class SoundSimPlot:
 
         # Repeating for other perspectives (XZ/YZ slices)
 
-        self.im2 = ax2.imshow(self.data_matrix[:, 0, :],
+        self.im2 = ax2.imshow(self.data_matrix[:, 0, :].T,
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
@@ -139,7 +139,7 @@ class SoundSimPlot:
         )
         yz_slice_slider.on_changed(self._updateYZSlice)
 
-        self.im3 = ax3.imshow(self.data_matrix[0, :, :],
+        self.im3 = ax3.imshow(self.data_matrix[0, :, :].T,
             cmap=cmap,
             interpolation="bilinear",
             origin="lower",
