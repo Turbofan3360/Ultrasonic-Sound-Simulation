@@ -70,10 +70,10 @@ def _computeAttenuationFactor(dist_matrix):
     Takes into account distance/atmospheric attenuation as well as due to the transducer beam profile
     """
     # Converting from mm to m, can be adapted depending on desired sim resolution
-    dist_matrix = np.divide(dist_matrix, 1000)
+    dist_matrix = np.divide(dist_matrix, np.float32(1000))
 
     # Calculating atmospheric attenuation of sound
-    atmospheric_attenuation = np.multiply(dist_matrix, -_ATTENUATION_CONSTANT)
+    atmospheric_attenuation = np.multiply(dist_matrix, np.float32(-_ATTENUATION_CONSTANT))
     np.exp(atmospheric_attenuation, out=atmospheric_attenuation)
 
     # Calculating attenuation of sound due to distance
@@ -99,8 +99,8 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     transducer_x, transducer_y, _ = transducer_pos
 
     # Shaping my x/y values into matrices of the right shape
-    x_vals = np.array(range(PLOTSIZE+1)).reshape(1, PLOTSIZE+1)
-    y_vals = np.array(range(PLOTSIZE+1)).reshape(PLOTSIZE+1, 1)
+    x_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(1, PLOTSIZE+1)
+    y_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(PLOTSIZE+1, 1)
 
     # Calculating the x/y deltas between the transducer position and each point in the grid
     delta_x_vals = x_vals - transducer_x
@@ -118,8 +118,8 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     angles_cosine = np.divide(dot_product_matrix, axis_vec_length)
     # Guarding against zero-division errors
     # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
-    distances = np.where(distances == 0, 1, distances)
-    np.divide(angles_cosine, distances, out=angles_cosine)
+    safe_distances = np.where(distances == 0, 1, distances)
+    np.divide(angles_cosine, safe_distances, out=angles_cosine)
 
     # Keeping cosine values in range
     np.clip(angles_cosine, -1, 1, out=angles_cosine)
@@ -137,9 +137,9 @@ def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
     transducer_x, transducer_y, transducer_z = transducer_pos
 
     # Shaping my x/y values into matrices of the right shape
-    x_vals = np.array(range(PLOTSIZE+1)).reshape(1, PLOTSIZE+1, 1)
-    y_vals = np.array(range(PLOTSIZE+1)).reshape(PLOTSIZE+1, 1, 1)
-    z_vals = np.array(range(PLOTSIZE+1)).reshape(1, 1, PLOTSIZE+1)
+    x_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(1, PLOTSIZE+1, 1)
+    y_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(PLOTSIZE+1, 1, 1)
+    z_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(1, 1, PLOTSIZE+1)
 
     # Calculating the x/y deltas between the transducer position and each point in the grid
     delta_x_vals = x_vals - transducer_x
@@ -159,8 +159,8 @@ def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
 
     # Guarding against zero-division errors
     # IDEA: Only modify transducer position cell in distances, as that's the only one == 0
-    distances = np.where(distances == 0, 1, distances)
-    np.divide(angles_cosine, distances, out=angles_cosine)
+    safe_distances = np.where(distances == 0, 1, distances)
+    np.divide(angles_cosine, safe_distances, out=angles_cosine)
 
     # Keeping cosine values in range
     np.clip(angles_cosine, -1, 1, out=angles_cosine)
@@ -177,7 +177,8 @@ def _generateTransducerMatrix2D(transducer_no):
     # Creating an initial uniform sound amplitude matrix
     amplitude_matrix = np.full(
         (PLOTSIZE+1, PLOTSIZE+1),
-        _PRESS_AMPLITUDE * R0
+        _PRESS_AMPLITUDE * R0,
+        dtype=np.float32
     )
 
     # Computing all required bits to determine sound wave amplitude at each point in the grid
@@ -201,7 +202,7 @@ def _generateTransducerMatrix2D(transducer_no):
     np.add(phase_offsets, TRANSDUCERS[transducer_no][2], out=phase_offsets)
 
     # Using those to calculate wave phasors
-    complex_wave_amplitudes = np.exp(1j*phase_offsets)
+    complex_wave_amplitudes = np.exp(phase_offsets*np.complex64(1j))
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
     np.multiply(amplitude_matrix, complex_wave_amplitudes, out=complex_wave_amplitudes)
@@ -216,7 +217,8 @@ def _generateTransducerMatrix3D(transducer_no):
     # Creating an initial uniform sound amplitude matrix
     amplitude_matrix = np.full(
         (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
-        _PRESS_AMPLITUDE * R0
+        _PRESS_AMPLITUDE * R0,
+        dtype=np.float32
     )
 
     # Computing all required bits to determine sound wave amplitude at each point in the grid
@@ -240,7 +242,8 @@ def _generateTransducerMatrix3D(transducer_no):
     np.add(phase_offsets, TRANSDUCERS[transducer_no][2], out=phase_offsets)
 
     # Using those to calculate wave phasors
-    complex_wave_amplitudes = np.exp(1j*phase_offsets)
+    # Specificying Complex64 instead of Complex128 as 32-bit floats give enough precision to work with
+    complex_wave_amplitudes = np.exp(phase_offsets*np.complex64(1j))
 
     # Applying wave amplitude (magnitude) to the wave phasor representation
     np.multiply(amplitude_matrix, complex_wave_amplitudes, out=complex_wave_amplitudes)
@@ -261,8 +264,9 @@ def runVectorisedSimulation2D():
 
     if (CPU_CORES == 1):
         sim_matrix = np.full(
-            (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
-            0+0j
+            (PLOTSIZE+1, PLOTSIZE+1),
+            0+0j,
+            dtype=np.complex64
         )
 
         for i in transducer_indexes:
@@ -292,7 +296,8 @@ def runVectorisedSimulation3D():
     if (CPU_CORES == 1):
         sim_matrix = np.full(
             (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
-            0+0j
+            0+0j,
+            dtype=np.complex64
         )
 
         for i in transducer_indexes:
