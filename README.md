@@ -18,7 +18,8 @@ This simulation can be run in 3D as well - this requires a fair bit of memory to
 
 Any ideas to improve the simulation quality are welcome!
 
-![Example image - 9 transducers, planar arrangment, no phase offsets](img/example_3d_sim.png)
+![Example image - 3 Transducers in a line, 3D slices view](img/example_3d_sim.png)
+![Example image - 3 Transducers in a line, 3D Napari visualisation](img/example_3d_sim_napari.png)
 
 ### Dependencies: ###
 
