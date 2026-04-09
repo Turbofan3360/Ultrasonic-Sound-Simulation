@@ -2,6 +2,7 @@
 
 from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
+import pyvista as pv
 from simulation import runVectorisedSimulation2D, runVectorisedSimulation3D
 from SIM_CONFIG import *
 
@@ -23,27 +24,6 @@ class SoundSimPlot:
                     current_min = data[a][b]
 
         return current_min
-
-    def _updateXYSlice(self, val):
-        """
-        Updates the XY slice of the heatmap data being visualizes
-        """
-        self.im1.set_data(self.data_matrix[:, :, val])
-        plt.draw()
-
-    def _updateYZSlice(self, val):
-        """
-        Updates the YZ slice of the heatmap data being visualizes
-        """
-        self.im2.set_data(self.data_matrix[:, val, :].T)
-        plt.draw()
-
-    def _updateXZSlice(self, val):
-        """
-        Updates the XZ slice of the heatmap data being visualizes
-        """
-        self.im3.set_data(self.data_matrix[val, :, :].T)
-        plt.draw()
 
     def plotSimulation2D(self):
         """
@@ -75,11 +55,68 @@ class SoundSimPlot:
 
     def plotSimulation3D(self):
         """
-        Plots a 3-dimensional heatmap of the data
-        Plus sliders to let you slice through cross-sections of the data
+        Calls the computation of the 3D data matrix, and then calls the desired visualisation function
         """
-        self.data_matrix = runVectorisedSimulation3D()
+        self.data_matrix = np.load("sim_data.npy")
 
+        # Creates a standardised colour map for the heatmaps
+        cmap = plt.get_cmap("plasma").copy()
+        cmap.set_under("lightgrey")
+
+        if VIEWMODE_3D == 0:
+            self._slicesThroughVolumeVisualisation(cmap)
+        elif VIEWMODE_3D == 1:
+            self._volumetricView(cmap)
+
+    def _volumetricView(self, cmap):
+        """
+        Uses PyVista to generate a volumetric view of the 3D data matrix
+        Generates a slider to set which dB volumes you want to see in the view
+        """
+        # Creating the PyVista ImageData object
+        img_data = pv.ImageData()
+
+        # Defining dimensions
+        img_data.dimensions = self.data_matrix.shape
+
+        # Flattening the data matrix so it can be displayed
+        self.data_matrix = self.data_matrix.flatten(order="F")
+
+        # Plotting the data
+        img_data.point_data["sound_sim"] = self.data_matrix
+
+        # Displaying the plot
+        img_data.plot(volume=True)
+
+    def _updateXYSlice(self, val):
+        """
+        Slider callback function
+        Updates the XY slice of the heatmap data being visualizes
+        """
+        self.im1.set_data(self.data_matrix[:, :, val])
+        plt.draw()
+
+    def _updateYZSlice(self, val):
+        """
+        Slider callback function
+        Updates the YZ slice of the heatmap data being visualizes
+        """
+        self.im2.set_data(self.data_matrix[:, val, :].T)
+        plt.draw()
+
+    def _updateXZSlice(self, val):
+        """
+        Slider callback function
+        Updates the XZ slice of the heatmap data being visualizes
+        """
+        self.im3.set_data(self.data_matrix[val, :, :].T)
+        plt.draw()
+
+    def _slicesThroughVolumeVisualisation(self, cmap):
+        """
+        Matplotlib visualisation for the 3D data
+        Plots three 2D slices of the data cube, with sliders to let you slice through cross-sections of the data
+        """
         # Creates a figure to plot on
         fig = plt.figure(figsize=(16, 5))
         fig.canvas.manager.set_window_title("Sound Simulation")
@@ -94,10 +131,6 @@ class SoundSimPlot:
         sl_ax3 = fig.add_axes([0.655, 0.15, 0.01, 0.75])
 
         cbar_ax = fig.add_axes([0.96, 0.15, 0.01, 0.75])
-
-        # Creates a standardised colour map for the heatmaps
-        cmap = plt.get_cmap("plasma").copy()
-        cmap.set_under("lightgrey")
 
         # TODO: Proper minimum value calculation
         self.im1 = ax1.imshow(self.data_matrix[:, :, 0],

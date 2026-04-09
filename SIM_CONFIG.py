@@ -7,6 +7,9 @@ import numpy as np
 PLOTSIZE = 500
 # 2D or 3D simulation
 sim3D = True
+# Adjusts how 3D data is displayed
+# 0 -> 2D slices through the volume, 1 -> 3D volume
+VIEWMODE_3D = 1
 # If True, the program uses Float32/Complex64 instead of Float64/Complex 128 for reduced memory usage
 COMPRESS_FLOAT = True
 # Max. number of CPU cores to be used in running the simulation
