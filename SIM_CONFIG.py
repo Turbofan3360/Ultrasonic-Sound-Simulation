@@ -7,6 +7,8 @@ import numpy as np
 PLOTSIZE = 500
 # 2D or 3D simulation
 sim3D = True
+# If True, the program uses Float32/Complex64 instead of Float64/Complex 128 for reduced memory usage
+COMPRESS_FLOAT = True
 # Max. number of CPU cores to be used in running the simulation
 CPU_CORES = 6
 # Simulated sound frequency in Hz

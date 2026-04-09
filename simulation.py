@@ -12,6 +12,7 @@ _ATTENUATION_CONSTANT = (2*1.85e-5*(2*np.pi*FREQUENCY)**2)/(3*1.225*(343**3))
 _PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
 _TRANSDUCER_POS_VECTORS = [np.array(i[0]) for i in TRANSDUCERS]
 _TRANSDUCER_AXIS_VECTORS = [np.array(i[1]) for i in TRANSDUCERS]
+_FLOAT_TYPE = np.float32 if COMPRESS_FLOAT else np.float64
 
 def _logger(string):
     """
@@ -70,10 +71,10 @@ def _computeAttenuationFactor(dist_matrix):
     Takes into account distance/atmospheric attenuation as well as due to the transducer beam profile
     """
     # Converting from mm to m, can be adapted depending on desired sim resolution
-    dist_matrix = np.divide(dist_matrix, np.float32(1000))
+    dist_matrix = np.divide(dist_matrix, _FLOAT_TYPE(1000))
 
     # Calculating atmospheric attenuation of sound
-    atmospheric_attenuation = np.multiply(dist_matrix, np.float32(-_ATTENUATION_CONSTANT))
+    atmospheric_attenuation = np.multiply(dist_matrix, _FLOAT_TYPE(-_ATTENUATION_CONSTANT))
     np.exp(atmospheric_attenuation, out=atmospheric_attenuation)
 
     # Calculating attenuation of sound due to distance
@@ -99,8 +100,8 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     transducer_x, transducer_y, _ = transducer_pos
 
     # Shaping my x/y values into matrices of the right shape
-    x_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(1, PLOTSIZE+1)
-    y_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(PLOTSIZE+1, 1)
+    x_vals = np.array(range(PLOTSIZE+1), dtype=_FLOAT_TYPE).reshape(1, PLOTSIZE+1)
+    y_vals = np.array(range(PLOTSIZE+1), dtype=_FLOAT_TYPE).reshape(PLOTSIZE+1, 1)
 
     # Calculating the x/y deltas between the transducer position and each point in the grid
     delta_x_vals = x_vals - transducer_x
@@ -137,9 +138,9 @@ def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
     transducer_x, transducer_y, transducer_z = transducer_pos
 
     # Shaping my x/y values into matrices of the right shape
-    x_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(1, PLOTSIZE+1, 1)
-    y_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(PLOTSIZE+1, 1, 1)
-    z_vals = np.array(range(PLOTSIZE+1), dtype=np.float32).reshape(1, 1, PLOTSIZE+1)
+    x_vals = np.array(range(PLOTSIZE+1), dtype=_FLOAT_TYPE).reshape(1, PLOTSIZE+1, 1)
+    y_vals = np.array(range(PLOTSIZE+1), dtype=_FLOAT_TYPE).reshape(PLOTSIZE+1, 1, 1)
+    z_vals = np.array(range(PLOTSIZE+1), dtype=_FLOAT_TYPE).reshape(1, 1, PLOTSIZE+1)
 
     # Calculating the x/y deltas between the transducer position and each point in the grid
     delta_x_vals = x_vals - transducer_x
@@ -178,7 +179,7 @@ def _generateTransducerMatrix2D(transducer_no):
     amplitude_matrix = np.full(
         (PLOTSIZE+1, PLOTSIZE+1),
         _PRESS_AMPLITUDE * R0,
-        dtype=np.float32
+        dtype=_FLOAT_TYPE
     )
 
     # Computing all required bits to determine sound wave amplitude at each point in the grid
@@ -218,7 +219,7 @@ def _generateTransducerMatrix3D(transducer_no):
     amplitude_matrix = np.full(
         (PLOTSIZE+1, PLOTSIZE+1, PLOTSIZE+1),
         _PRESS_AMPLITUDE * R0,
-        dtype=np.float32
+        dtype=_FLOAT_TYPE
     )
 
     # Computing all required bits to determine sound wave amplitude at each point in the grid
