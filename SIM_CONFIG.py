@@ -18,6 +18,12 @@ COMPRESS_FLOAT = True
 CPU_CORES = 6
 # Simulated sound frequency in Hz
 FREQUENCY = 25000
+# Temperatue in degrees celcius (only applies if sound frequency audible - <20KHz)
+TEMPERATURE_DEG_C = 25
+# Pressure in KPa (only applies if sound frequency audible - <20KHz)
+PRESSURE_KPA = 101
+# Relative humidity in % (only applies if sound frenquency audible - <20KHz)
+RELATIVE_HUMIDITY = 50
 # Comes from transducer datasheet, in dB
 TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL = 120
 # The distance at which transducer's transmitting sound pressure level is measured, in M

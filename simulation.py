@@ -4,10 +4,12 @@ from multiprocessing import Pool
 import numpy as np
 from SIM_CONFIG import *
 
+# Calculating tempearture-adjusted speed of sound
+_C = 343.2*(T_rel**0.5)
 # Wavelength in MM
-_WAVELENGTH = (343/FREQUENCY)*1000
-# Calculation using Stokes-Kirchoff Model, in Nepers/m
-_ATTENUATION_CONSTANT = (2*1.85e-5*(2*np.pi*FREQUENCY)**2)/(3*1.225*(343**3))
+_WAVELENGTH = (_C/FREQUENCY)*1000
+# In Nepers/m
+_ATTENUATION_CONSTANT = _computeAttenuationConstant()
 # Used for calculating absolute volume of ultrasound at every point
 _PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
 # Transducer position vector list, in terms of simulation cells (not mm)
@@ -15,6 +17,7 @@ _TRANSDUCER_POS_VECTORS = [np.array(i[0]) / CELL_SIDE_LENGTH_MM for i in TRANSDU
 _TRANSDUCER_AXIS_VECTORS = [np.array(i[1]) for i in TRANSDUCERS]
 _FLOAT_TYPE = np.float32 if COMPRESS_FLOAT else np.float64
 _COMPLEX_TYPE = np.complex64 if COMPRESS_FLOAT else np.complex128
+_DEG_C_TO_KELVIN = 273.15
 
 def _logger(string):
     """
@@ -36,6 +39,46 @@ def _computeDBAWeight():
     aweight = 20*np.log10(ra)+2
 
     return aweight
+
+def _computeAttenuationConstant():
+    """
+    Computes an attenuation constant for the simulation
+    If ultrasound is being simulated - use the Stokes-Kirchoff model (accounting for viscosity/thermal conductivity of air)
+    If normal sound being simulated - use the ISO 9613-1 model (accounting for molecular relaxation)
+
+    These are the dominant factors for audible vs. ultrasound attenuation in atmosphere
+    """
+    if FREQUENCY > 20000:
+        constant = (2*1.85e-5*(2*np.pi*FREQUENCY)**2)/(3*1.225*(343**3))
+    else:
+        T_kel = TEMPERATURE_DEG_C + _DEG_C_TO_KELVIN
+        T_rel = T_kel / (_DEG_C_TO_KELVIN + 20)
+        T_01 = _DEG_C_TO_KELVIN + 0.01
+        Tho = 2239.1
+        Thn = 3352.0
+        P_rel = PRESSURE_KPA / 101.325
+        Xo = 0.209
+        Xn = 0.781
+        f_khz = FREQUENCY / 1000
+
+        P_sat_P_ref = 10**(-6.8346*(T_01 / _DEG_C_TO_KELVIN)**1.261+4.6151)
+        H = RELATIVE_HUMIDITY*(P_sat_P_ref / P_rel)
+
+        Fro = P_rel * (24+(4.04e4) * H * (0.02+H) / (0.391+H))
+        Frn = P_rel * (T_rel**(-1/3)) * (9 + 280 * H * np.exp(-4.170*(T_rel**(-1/3) - 1)))
+
+        acr = (1.60e-10)*(T_rel**0.5) * (f_khz**2) / P_rel
+
+        amaxO = (2*np.pi/35) * (10*np.log10(np.e**2)) * Xo * ((Tho / T_kel)**2) * np.exp(-Tho / T_kel)
+        avibO = amaxO * (f_khz/_C) * 2 * (f_khz/Fro) / (1+(f_khz/Fro)**2)
+
+        amaxN = (2*np.pi/35) * (10*np.log10(np.e**2)) * Xn * ((Thn/T_kel)**2) * np.exp(-Thn/T_kel)
+        avibN = amaxN * (f_khz/_C) * 2 * (f_khz/Frn) / (1+(f_khz/Frn)**2)
+
+        constant = acr + avibO + avibN
+        constant *= 0.1151277918 # Converting from dB/m to Nepers/m
+
+    return constant
 
 def _convertTodB(amplitude_matrix):
     """
@@ -67,10 +110,10 @@ def _convertTodB(amplitude_matrix):
 
     return sim_matrix_db
 
-def _computeAttenuationFactor(dist_matrix):
+def _computeAttenuationFactors(dist_matrix):
     """
     Calculates and applies attenuation to the amplitude matrix
-    Takes into account distance/atmospheric attenuation as well as due to the transducer beam profile
+    Takes into account attenuation due to distance and atmospheric effects
     """
     # Converting from mm to m, can be adapted depending on desired sim resolution
     dist_matrix = np.divide(dist_matrix, _FLOAT_TYPE(1000))
@@ -196,7 +239,7 @@ def _generateTransducerMatrix2D(transducer_no):
         _TRANSDUCER_POS_VECTORS[transducer_no],
         _TRANSDUCER_AXIS_VECTORS[transducer_no]
     )
-    attenuation_factors = _computeAttenuationFactor(dist_matrix)
+    attenuation_factors = _computeAttenuationFactors(dist_matrix)
     beam_angle_factors = userComputeBeamAngleResponse(angle_matrix)
 
     # Applying those two calculations to the amplitudes
@@ -236,7 +279,7 @@ def _generateTransducerMatrix3D(transducer_no):
         _TRANSDUCER_POS_VECTORS[transducer_no],
         _TRANSDUCER_AXIS_VECTORS[transducer_no]
     )
-    attenuation_factors = _computeAttenuationFactor(dist_matrix)
+    attenuation_factors = _computeAttenuationFactors(dist_matrix)
     beam_angle_factors = userComputeBeamAngleResponse(angle_matrix)
 
     # Applying those two calculations to the amplitudes
