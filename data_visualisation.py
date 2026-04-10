@@ -46,8 +46,8 @@ class SoundSimPlot:
 
         plt.title(f"Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
 
-        plt.xlabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
-        plt.ylabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
+        plt.xlabel("Distance (Cells)")
+        plt.ylabel("Distance (Cells)")
 
         plt.gcf().canvas.manager.set_window_title("Sound Simulation")
 
@@ -201,12 +201,12 @@ class SoundSimPlot:
         ax2.set_title(f"YZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
         ax3.set_title(f"XZ Ultrasound Intensity {"(dBA)" if dBA else "(dB)"}")
 
-        ax1.set_xlabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
-        ax2.set_xlabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
-        ax3.set_xlabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
-        ax1.set_ylabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
-        ax2.set_ylabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
-        ax3.set_ylabel(f"Distance (1 Cell is {CELL_SIDE_LENGTH_MM}mm)")
+        ax1.set_xlabel("Distance (Cells)")
+        ax2.set_xlabel("Distance (Cells)")
+        ax3.set_xlabel("Distance (Cells)")
+        ax1.set_ylabel("Distance (Cells)")
+        ax2.set_ylabel("Distance (Cells)")
+        ax3.set_ylabel("Distance (Cells)")
 
         plt.show()
 
