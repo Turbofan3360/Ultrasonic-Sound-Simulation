@@ -16,6 +16,8 @@ The computation of the wave matrix from each transducer can be run in parallel -
 
 This simulation can be run in 3D as well - this requires a fair bit of memory to run, although this can be halved by setting COMPRESS_FLOAT=True. You can select different ways to visualise this - either using matplotlib to view slices through the data in the XY/XZ/YZ planes, or Napari to view a full 3D visualisation of the data.
 
+To run the simulation, after configuring the settings in SIM_CONFIG.py, all you need to do it run data_visualisation.py 
+
 Any ideas to improve the simulation quality are welcome!
 
 ![Example image - 3 Transducers in a line, 3D slices view](img/example_3d_sim.png)
