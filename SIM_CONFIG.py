@@ -8,7 +8,7 @@ PLOTSIZE = 500
 # Sife length of the cells in the simulation, in mm
 CELL_SIDE_LENGTH_MM = 1
 # 2D or 3D simulation
-sim3D = True
+SIM3D = True
 # Adjusts how 3D data is displayed
 # 0 -> 2D slices through the volume, 1 -> Full 3D visualisation of the data
 VIEWMODE_3D = 1
