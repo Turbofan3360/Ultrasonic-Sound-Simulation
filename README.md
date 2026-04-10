@@ -36,9 +36,11 @@ All these Python 3 packages can be installed via pip
 
 In the SIM_CONFIG.py file are all the things that can be tuned to produce your simulation.
 
-PLOTSIZE - The size of each side of the plot (in millimeters - to reduce simulation resolution requires a bit more code tweaking)
+PLOTSIZE - The number of simulation cells along each side of the plot
 
-sim3D - If True, the simulation will be 3D - otherwise it will be 2D
+CELL_SIDE_LENGTH_MM - The side length of each cell of the simulation, in MM
+
+SIM3D - If True, the simulation will be 3D - otherwise it will be 2D
 
 VIEWMODE_3D - If 0, 3D simulations will be displayed with matplotlib showing slices through the data in the XY/XZ/YZ planes. If 1, Napari will be used to view a full 3D visualisation of the data.
 
