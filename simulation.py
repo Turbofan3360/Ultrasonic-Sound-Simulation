@@ -10,7 +10,8 @@ _WAVELENGTH = (343/FREQUENCY)*1000
 _ATTENUATION_CONSTANT = (2*1.85e-5*(2*np.pi*FREQUENCY)**2)/(3*1.225*(343**3))
 # Used for calculating absolute volume of ultrasound at every point
 _PRESS_AMPLITUDE = 0.00002 * (10**(TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL/20))
-_TRANSDUCER_POS_VECTORS = [np.array(i[0]) for i in TRANSDUCERS]
+# Transducer position vector list, in terms of simulation cells (not mm)
+_TRANSDUCER_POS_VECTORS = [np.array(i[0]) / CELL_SIDE_LENGTH_MM for i in TRANSDUCERS]
 _TRANSDUCER_AXIS_VECTORS = [np.array(i[1]) for i in TRANSDUCERS]
 _FLOAT_TYPE = np.float32 if COMPRESS_FLOAT else np.float64
 _COMPLEX_TYPE = np.complex64 if COMPRESS_FLOAT else np.complex128
@@ -129,6 +130,9 @@ def _computeTransducerDistancesAngles(transducer_pos, transducer_axis):
     # Calculating the angles as a matrix
     angles = np.arccos(angles_cosine)
 
+    # Converting from distance in terms of cells to distance in mm
+    np.multiply(distances, CELL_SIDE_LENGTH_MM, out=distances)
+
     return distances, angles
 
 def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
@@ -169,6 +173,9 @@ def _computeTransducerDistancesAngles3D(transducer_pos, transducer_axis):
 
     # Calculating the angles as a matrix
     angles = np.arccos(angles_cosine)
+
+    # Converting from distance in terms of cells to distance in mm
+    np.multiply(distances, CELL_SIDE_LENGTH_MM, out=distances)
 
     return distances, angles
 
