@@ -4,13 +4,15 @@
 
 This started with a paper from the University of Chicago's SAND Lab: <https://sandlab.cs.uchicago.edu/jammer/>. The aim of their project was to create a wearable jammer that uses ultrasonic sound to jam many common microphones such as those used in Alexa or Google Home smart assistants.
 
-I wanted to write a simulation which could replicate the simulation results achieved in their paper, as well as potentially be used for other ultrasound simulation tasks.
+I wanted to write a simulation which could replicate the simulation results achieved in their paper, as well as potentially be used for other ultrasound simulation tasks. This simulation has also been extended (by adding a suitable attenuation model) to work for simulations of audible sound as well.
 
 _More details about their project and simulation in their paper, written here: <https://people.cs.uchicago.edu/~ravenben/publications/pdf/ultra-chi20.pdf>_
 
 ### The Code: ###
 
 This simulation is a fully vectorised (using NumPy) computation that computes a matrix of the wave from each transducer across the grid. These matrices are then summed together, before the resulting wave magnitude at each point is taken to determine the final simulation result. Results are log-scaled that to a decibel result - either dB or dBA, depending on the your preference.
+
+Depending on whether the sound frequency is audible or ultrasound, the code uses a different attenuation formula to model the dominant factors in attenuation at those frequencies.
 
 The computation of the wave matrix from each transducer can be run in parallel - one CPU core per transducer.
 
@@ -49,6 +51,12 @@ In the SIM_CONFIG.py file are all the things that can be tuned to produce your s
 - CPU_CORES - The maximum number of CPU cores the simulation will use when running
 
 - FREQUENCY - The sound frequency, in Hz, being simulated
+
+- TEMPERATURE_DEG_C - The air temperature in degrees celcius (only applicable if simulating audible sound frequencies - below 20KHz)
+
+- PRESSURE_KPA - The atmospheric pressure in KPa (only applicable if simulating audible sound frequencies - below 20KHz)
+
+- RELATIVE_HUMIDITY - The atmospheric humidity in % (only applicable if simulating audible sound frequencies - below 20KHz)
 
 - TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL - The volume of your transducer, in dB
 
