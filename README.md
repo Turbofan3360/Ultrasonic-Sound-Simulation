@@ -36,28 +36,28 @@ All these Python 3 packages can be installed via pip
 
 In the SIM_CONFIG.py file are all the things that can be tuned to produce your simulation.
 
-PLOTSIZE - The number of simulation cells along each side of the plot
+- PLOTSIZE - The number of simulation cells along each side of the plot
 
-CELL_SIDE_LENGTH_MM - The side length of each cell of the simulation, in MM
+- CELL_SIDE_LENGTH_MM - The side length of each cell of the simulation, in MM
 
-SIM3D - If True, the simulation will be 3D - otherwise it will be 2D
+- SIM3D - If True, the simulation will be 3D - otherwise it will be 2D
 
-VIEWMODE_3D - If 0, 3D simulations will be displayed with matplotlib showing slices through the data in the XY/XZ/YZ planes. If 1, Napari will be used to view a full 3D visualisation of the data.
+- VIEWMODE_3D - If 0, 3D simulations will be displayed with matplotlib showing slices through the data in the XY/XZ/YZ planes. If 1, Napari will be used to view a full 3D visualisation of the data.
 
-COMPRESS_FLOAT - If True, Float32 will be used instead of Float64, halving the memory usage of the program
+- COMPRESS_FLOAT - If True, Float32 will be used instead of Float64, halving the memory usage of the program
 
-CPU_CORES - The maximum number of CPU cores the simulation will use when running
+- CPU_CORES - The maximum number of CPU cores the simulation will use when running
 
-FREQUENCY - The sound frequency, in Hz, being simulated
+- FREQUENCY - The sound frequency, in Hz, being simulated
 
-TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL - The volume of your transducer, in dB
+- TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL - The volume of your transducer, in dB
 
-R0 - The distance at which TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL is measured, in meters
+- R0 - The distance at which TRANSDUCER_TRANSMITTING_PRESSURE_LEVEL is measured, in meters
 
-dBA - Whether or not the simulation output is in dB (dBA = False) or dBA (dBA = True)
+- dBA - Whether or not the simulation output is in dB (dBA = False) or dBA (dBA = True)
 
-TRANSDUCERS - An array describing your transducer setup. Each transducer should be formatted as: [[x-y position vector], [x-y central axis vector], phase offset (radians)]
+- TRANSDUCERS - An array describing your transducer setup. Each transducer should be formatted as: [[x-y position vector], [x-y central axis vector], phase offset (radians)]
 
-User-defined function _userComputeBeamAngleResponse(angle_matrix)_:
+- User-defined function _userComputeBeamAngleResponse(angle_matrix)_:
 
-This is where you can write your own function which the simulation will use to describe how the transducer's emitted sound amplitude varies with angle from the transducer central axis. Currently, this is a simple sinc() function approximation. When writing your own function here, ensure all the operations are NumPy matrix operations for efficiency and execution speed.
+    This is where you can write your own function which the simulation will use to describe how the transducer's emitted sound amplitude varies with angle from the transducer central axis. Currently, this is a simple sinc() function approximation. When writing your own function here, ensure all the operations are NumPy matrix operations for efficiency and execution speed.
