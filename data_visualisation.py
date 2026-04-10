@@ -59,16 +59,16 @@ class SoundSimPlot:
         """
         self.data_matrix = runVectorisedSimulation3D()
 
-        # Creates a standardised colour map for the heatmaps
-        cmap = plt.get_cmap("plasma").copy()
-        cmap.set_under("lightgrey")
-
         if VIEWMODE_3D == 0:
+            # Creates a colour map for the heatmap
+            cmap = plt.get_cmap("plasma").copy()
+            cmap.set_under("lightgrey")
+
             self._slicesThroughVolumeVisualisation(cmap)
         elif VIEWMODE_3D == 1:
-            self._volumetricView(cmap)
+            self._volumetricView()
 
-    def _volumetricView(self, cmap):
+    def _volumetricView(self):
         """
         Uses napari to generate a volumetric view of the 3D data matrix
         """
